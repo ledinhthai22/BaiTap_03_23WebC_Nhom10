@@ -1,0 +1,82 @@
+﻿@using System.Globalization; 
+@using BaiTap_03_23WebC_Nhom10.Models;
+@model List<Product>
+@section title {
+        Shop - eElectronics - HTML eCommerce Template
+}
+@section css {
+}
+@section js {
+}
+@section subtitle {
+    <div class="product-big-title-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="product-bit-title text-center">
+                        <h2>Shopping</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+@{
+    ViewBag.PageName = "List";
+    var culture = new CultureInfo("vi-VN");
+}
+<div class="single-product-area">
+    <div class="zigzag-bottom"></div>
+    <div class="container">
+        <div class="row">
+            @foreach (var p in Model)
+            {
+                <div class="col-md-3 col-sm-6">
+                    <div class="single-shop-product">
+                        <div class="product-upper">
+                            <img src="img/@p.HinhAnh" alt="">
+                        </div>
+                        <h2><a href="">@p.TenSp</a></h2>
+                        <div class="product-carousel-price">
+                            @{
+
+                                var discountedPrice = p.DonGia * (1 - p.DonGiaKhuyenMai);
+                                var formattedDiscountedPrice = discountedPrice.ToString("N0", culture);
+                                var formattedOriginalPrice = p.DonGia.ToString("N0", culture);
+                            }
+                            <ins>@formattedDiscountedPrice VNĐ</ins> <del>@formattedOriginalPrice VNĐ</del>
+                        </div>
+
+                        <div class="product-option-shop">
+                            <a class="add_to_cart_button" data-quantity="1" data-product_sku="" data-product_id="70" rel="nofollow" href="/canvas/shop/?add-to-cart=70">Add to cart</a>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="product-pagination text-center">
+                    <nav>
+                        <ul class="pagination">
+                            @{
+                                var TotalItems = ViewBag.TotalItems;
+                                var PageSize = ViewBag.PageSize;
+                                var CurrentPage = ViewBag.CurrentPage;
+								var TotalPages = (int)Math.Ceiling((double)TotalItems / PageSize);
+
+								for (int i = 1; i <= TotalPages; i++)
+								{
+                                    <li class="page-item @(i == CurrentPage ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Index", new { page = i })">@i</a>
+                                    </li>
+								}
+                            }
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
