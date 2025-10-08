@@ -20,7 +20,7 @@
             <li>
                 <a asp-area="admin" asp-action="index" asp-controller="home"><i class="fa fa-dashboard fa-fw"></i> Trang chu</a>
             </li>
-            <li>
+            @* <li>
                 <a href="#"><i class="fa fa-bar-chart-o fa-fw"></i> Charts<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li>
@@ -31,14 +31,18 @@
                     </li>
                 </ul>
                 <!-- /.nav-second-level -->
+            </li> *@
+            <li>
+                <a asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="fa fa-table fa-fw"></i>Quản lý sản phẩm</a>
             </li>
             <li>
-                <a asp-area="Admin" asp-controller="Products" asp-action="Index"><i class="fa fa-table fa-fw"></i> Danh sach san pham</a>
+                <a asp-area="Admin" asp-controller="Category" asp-action="Index"><i class="fa fa-table fa-fw"></i>Quản lý thể loại</a>
             </li>
-            <li>
+
+            @* <li>
                 <a href="#"><i class="fa fa-edit fa-fw"></i> Forms</a>
-            </li>
-            <li>
+            </li> *@
+            @* <li>
                 <a href="#"><i class="fa fa-wrench fa-fw"></i> UI Elements<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li>
@@ -61,8 +65,8 @@
                     </li>
                 </ul>
                 <!-- /.nav-second-level -->
-            </li>
-            <li>
+            </li> *@
+            @* <li>
                 <a href="#"><i class="fa fa-sitemap fa-fw"></i> Multi-Level Dropdown<span class="fa arrow"></span></a>
                 <ul class="nav nav-second-level">
                     <li>
@@ -101,9 +105,9 @@
                     <li>
                         <a href="#">Login Page</a>
                     </li>
-                </ul>
+                </ul> *@
                 <!-- /.nav-second-level -->
-            </li>
+            @* </li> *@
         </ul>
     </div>
     <!-- /.sidebar-collapse -->

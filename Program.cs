@@ -17,6 +17,7 @@ namespace BaiTap_03_23WebC_Nhom10
                 string dbPath = Path.Combine(env.WebRootPath,"data" ,"db.json");
                 return new ProductService(dbPath);
             });
+            builder.Services.AddScoped<DatabaseHelper>();
 
             var app = builder.Build();
 
