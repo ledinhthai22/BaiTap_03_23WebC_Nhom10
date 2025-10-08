@@ -1,4 +1,4 @@
-namespace BaiTap_02_23WebC_Nhom10.Models
+namespace BaiTap_03_23WebC_Nhom10.Models
 {
     public class ErrorViewModel
     {
