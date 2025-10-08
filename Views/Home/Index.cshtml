@@ -21,7 +21,7 @@
             if (typeof jQuery == 'undefined') {
                 return;
             }
-            
+
             const formatCurrency = (amount) => {
                 const formatter = new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
@@ -32,30 +32,33 @@
             }
 
             const latestProduct = (p) => {
-                let finalPrice = p.donGia * (1 - p.donGiaKhuyenMai);
+                // SỬA: p.price và p.discount (camelCase mới)
+                let finalPrice = p.price * (1 - p.discount);
                 let price = '';
                 let finalPriceFormatted = formatCurrency(finalPrice);
-                let donGiaFormatted = formatCurrency(p.donGia);
+                let priceFormatted = formatCurrency(p.price);
 
-                if (p.donGiaKhuyenMai > 0) {
-                    price = `<ins>${finalPriceFormatted}</ins><del>${donGiaFormatted}</del>`;
+                // SỬA: p.discount (camelCase mới)
+                if (p.discount > 0) {
+                    price = `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`;
                 } else {
-                    price = `<ins>${donGiaFormatted}</ins>`;
+                    price = `<ins>${priceFormatted}</ins>`;
                 }
 
-                const detail = `@Url.Action("Detail", "Product")/${p.maSp}`;
+                // SỬA: p.id, p.image, p.productName (camelCase mới)
+                const detail = `@Url.Action("Detail", "Product")/${p.id}`;
                 const cart = `@Url.Action("cart", "product")`;
 
                 return `
                     <div class="single-product">
                         <div class="product-f-image">
-                            <img src="/img/${p.hinhAnh}" alt="">
+                            <img src="/img/${p.image}" alt="">
                             <div class="product-hover">
                                 <a href="${cart}" class="add-to-cart-link"><i class="fa fa-shopping-cart"></i> Add to cart</a>
                                 <a href="${detail}" class="view-details-link"><i class="fa fa-link"></i> See details</a>
                             </div>
                         </div>
-                        <h2><a href="${detail}">${p.tenSp}</a></h2>
+                        <h2><a href="${detail}">${p.productName}</a></h2>
                         <div class="product-carousel-price">
                             ${price}
                         </div>
@@ -64,23 +67,25 @@
             };
 
             const widgetProduct = (p) => {
-                let finalPrice = p.donGia * (1 - p.donGiaKhuyenMai);
+                // SỬA: p.price và p.discount (camelCase mới)
+                let finalPrice = p.price * (1 - p.discount);
                 let price = '';
                 let finalPriceFormatted = formatCurrency(finalPrice);
-                let donGiaFormatted = formatCurrency(p.donGia);
+                let priceFormatted = formatCurrency(p.price);
 
-                if (p.donGiaKhuyenMai > 0) {
-                    price = `<ins>${finalPriceFormatted}</ins><del>${donGiaFormatted}</del>`;
+                // SỬA: p.discount (camelCase mới)
+                if (p.discount > 0) {
+                    price = `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`;
                 } else {
-                    price = `<ins>${donGiaFormatted}</ins>`;
+                    price = `<ins>${priceFormatted}</ins>`;
                 }
 
-                const detail = `@Url.Action("Detail", "Product")/${p.maSp}`;
-
+                // SỬA: p.id, p.image, p.productName (camelCase mới)
+                const detail = `@Url.Action("Detail", "Product")/${p.id}`;
                 return `
                     <div class="single-wid-product">
-                        <a href="${detail}"><img src="/img/${p.hinhAnh}" alt="" class="product-thumb"></a>
-                        <h2><a href="${detail}">${p.tenSp}</a></h2>
+                        <a href="${detail}"><img src="/img/${p.image}" alt="" class="product-thumb"></a>
+                        <h2><a href="${detail}">${p.productName}</a></h2>
                         <div class="product-wid-rating">
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
@@ -112,27 +117,27 @@
 
                         $('.product-carousel').html(latestProductsHtml);
                         $('.product-carousel').trigger('destroy.owl.carousel');
-						$('.product-carousel').owlCarousel({
-							loop: true,
-							nav: true,
-							margin: 20,
-							responsiveClass: true,
-							responsive: {
-								0: {
-									items: 1,
-									nav: true
-								},
-								600: {
-									items: 3,
-									nav: false
-								},
-								1000: {
-									items: 4,
-									nav: true,
-									loop: false
-								}
-							}
-						});
+                        $('.product-carousel').owlCarousel({
+                            loop: true,
+                            nav: true,
+                            margin: 20,
+                            responsiveClass: true,
+                            responsive: {
+                                0: {
+                                    items: 1,
+                                    nav: true
+                                },
+                                600: {
+                                    items: 3,
+                                    nav: false
+                                },
+                                1000: {
+                                    items: 4,
+                                    nav: true,
+                                    loop: false
+                                }
+                            }
+                        });
                         products.slice(0, 3).forEach(p => { topSellersHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(1) .single-product-widget').append(topSellersHtml);
 
@@ -141,9 +146,6 @@
 
                         products.slice(6, 9).forEach(p => { topNewHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(3) .single-product-widget').append(topNewHtml);
-
-
-                        
                     }
                 },
                 error: function (xhr, status, error) {
@@ -276,7 +278,6 @@
                 <div class="latest-product">
                     <h2 class="section-title">Latest Products</h2>
                     <div class="product-carousel">
-                        @* Dữ liệu sản phẩm sẽ được chèn vào đây bằng AJAX *@
                     </div>
                 </div>
             </div>
@@ -313,21 +314,18 @@
                 <div class="single-product-widget">
                     <h2 class="product-wid-title">Top Sellers</h2>
                     <a href="#" class="wid-view-more">View All</a>
-                    @* Dữ liệu sản phẩm sẽ được chèn vào đây bằng AJAX *@
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="single-product-widget">
                     <h2 class="product-wid-title">Recently Viewed</h2>
                     <a href="#" class="wid-view-more">View All</a>
-                    @* Dữ liệu sản phẩm sẽ được chèn vào đây bằng AJAX *@
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="single-product-widget">
                     <h2 class="product-wid-title">Top New</h2>
                     <a href="#" class="wid-view-more">View All</a>
-                    @* Dữ liệu sản phẩm sẽ được chèn vào đây bằng AJAX *@
                 </div>
             </div>
         </div>

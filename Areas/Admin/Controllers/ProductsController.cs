@@ -58,7 +58,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.Admin.Controllers
                 using var stream = new FileStream(filePath, FileMode.Create);
                 await HinhAnhFile.CopyToAsync(stream);
 
-                product.HinhAnh = Path.Combine(fileName).Replace("\\", "/");
+                product.image = Path.Combine(fileName).Replace("\\", "/");
 
             }
 
