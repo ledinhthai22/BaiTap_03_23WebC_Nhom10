@@ -1,75 +1,38 @@
 ﻿@using System.Globalization;
 @using BaiTap_03_23WebC_Nhom10.Service;
-@using BaiTap_03_23WebC_Nhom10.Models;
+@using BaiTap_03_23WebC_Nhom10.Models;s
+@{
+
+    var products = Context.Items["products"] as List<Product> ?? new List<Product>();
+
+    var culture = new CultureInfo("vi-VN");
+}
 
 <div class="single-sidebar">
     <h2 class="sidebar-title">Products</h2>
+    @foreach (var p in products.Take(3))
+    {
 
-    <div id="product-sidebar-list">
-        <p>Đang tải sản phẩm...</p>
-    </div>
+        double discountedPrice = p.DonGia * (1 - p.DonGiaKhuyenMai);
+        string formattedDiscountedPrice = discountedPrice.ToString("N0", culture);
+        string formattedOriginalPrice = p.DonGia.ToString("N0", culture);
+
+        <div class="thubmnail-recent">
+            <img src="~/img/@p.HinhAnh" class="recent-thumb" alt="">
+            <h2><a asp-controller="product" asp-action="detail" asp-route-id="@p.MaSp">@p.TenSp</a></h2>
+
+            <div class="product-sidebar-price">
+                @if (p.DonGiaKhuyenMai > 0)
+                {
+                    <ins>@formattedDiscountedPrice VNĐ</ins>
+
+                    <del>@formattedOriginalPrice VNĐ</del>
+                }
+                else
+                {
+                    <ins>@formattedOriginalPrice VNĐ</ins>
+                }
+            </div>
+        </div>
+    }
 </div>
-
-@section Scripts {
-    <script>
-        $(document).ready(function () {
-            if (typeof jQuery == 'undefined') {
-                return;
-            }
-            const formatCurrency = (amount) => {
-                const formatter = new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                    minimumFractionDigits: 0
-                });
-                return formatter.format(amount).replace("₫", "VNĐ");
-            }
-            const sidebarProductHtml = (p) => {
-                let finalPrice = p.donGia * (1 - p.donGiaKhuyenMai);
-                let priceHtml = '';
-                let finalPriceFormatted = formatCurrency(finalPrice);
-                let donGiaFormatted = formatCurrency(p.donGia);
-
-                if (p.donGiaKhuyenMai > 0) {
-                    priceHtml = `<ins>${finalPriceFormatted}</ins><del>${donGiaFormatted}</del>`;
-                } else {
-                    priceHtml = `<ins>${donGiaFormatted}</ins>`;
-                }
-                const detailUrl = `@Url.Action("Detail", "Product")/${p.maSp}`;
-
-                return `
-                    <div class="thubmnail-recent">
-                        <img src="/img/${p.hinhAnh}" class="recent-thumb" alt="">
-                        <h2><a href="${detailUrl}">${p.tenSp}</a></h2>
-                        <div class="product-sidebar-price">
-                            ${priceHtml}
-                        </div>
-                    </div>
-                `;
-            };
-            $.ajax({
-                url: '@Url.Action("GetProducts", "API", new { area = "API" })',
-                type: 'GET',
-                dataType: 'json',
-                success: function (products) {
-                    const container = $('#product-sidebar-list');
-                    let productsHtml = '';
-
-                    if (products && products.length > 0) {
-                        products.slice(0, 3).forEach(p => {
-                            productsHtml += sidebarProductHtml(p);
-                        });
-
-                        container.html(productsHtml);
-                    } else {
-                        container.html('<p>Không tìm thấy sản phẩm nào.</p>');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error("Lỗi khi tải sản phẩm:", status, error);
-                    $('#product-sidebar-list').html('<p>Lỗi: Không thể tải dữ liệu sản phẩm.</p>');
-                }
-            });
-        });
-    </script>
-}
