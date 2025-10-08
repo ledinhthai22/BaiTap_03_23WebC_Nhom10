@@ -1,10 +1,10 @@
 ﻿@using System.Globalization;
 @using BaiTap_03_23WebC_Nhom10.Service;
-@using BaiTap_03_23WebC_Nhom10.Models;s
+@using BaiTap_03_23WebC_Nhom10.Models;
 @{
-    
+
     var products = Context.Items["products"] as List<Product> ?? new List<Product>();
- 
+
     var culture = new CultureInfo("vi-VN");
 }
 
@@ -12,7 +12,7 @@
     <h2 class="sidebar-title">Products</h2>
     @foreach (var p in products.Take(3))
     {
-        
+
         double discountedPrice = p.DonGia * (1 - p.DonGiaKhuyenMai);
         string formattedDiscountedPrice = discountedPrice.ToString("N0", culture);
         string formattedOriginalPrice = p.DonGia.ToString("N0", culture);
@@ -25,7 +25,7 @@
                 @if (p.DonGiaKhuyenMai > 0)
                 {
                     <ins>@formattedDiscountedPrice VNĐ</ins>
-                    
+
                     <del>@formattedOriginalPrice VNĐ</del>
                 }
                 else
