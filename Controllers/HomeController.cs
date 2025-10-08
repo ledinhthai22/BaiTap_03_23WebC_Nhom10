@@ -19,17 +19,6 @@ namespace BaiTap_02_23WebC_Nhom10.Controllers
         {
             return View();
         }
-        [HttpGet]
-        public IActionResult GetProductList()
-        {
-            List<Product> products = new List<Product>();
-
-            if (HttpContext.Items.TryGetValue("products", out var productsObj) && productsObj is List<Product> p)
-            {
-                products = p.Take(3).ToList();
-            }
-            return Json(products);
-        }
 
         public IActionResult Privacy()
         {
