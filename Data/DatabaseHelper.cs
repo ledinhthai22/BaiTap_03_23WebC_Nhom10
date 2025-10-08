@@ -2,7 +2,7 @@
 using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
 
-namespace BaiTap_02_23WebC_Nhom10.Service
+namespace BaiTap_03_23WebC_Nhom10.Service
 {
     public class DatabaseHelper
     {
