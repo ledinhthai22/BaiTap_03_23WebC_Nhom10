@@ -111,7 +111,28 @@
                         });
 
                         $('.product-carousel').html(latestProductsHtml);
-
+                        $('.product-carousel').trigger('destroy.owl.carousel');
+						$('.product-carousel').owlCarousel({
+							loop: true,
+							nav: true,
+							margin: 20,
+							responsiveClass: true,
+							responsive: {
+								0: {
+									items: 1,
+									nav: true
+								},
+								600: {
+									items: 3,
+									nav: false
+								},
+								1000: {
+									items: 4,
+									nav: true,
+									loop: false
+								}
+							}
+						});
                         products.slice(0, 3).forEach(p => { topSellersHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(1) .single-product-widget').append(topSellersHtml);
 
