@@ -64,11 +64,11 @@ namespace BaiTap_03_23WebC_Nhom10.Service
 
         public IEnumerable<Product> GetAll() => Products;
 
-        public Product? GetById(int id) => Products.FirstOrDefault(p => p.MaSp == id);
+        public Product? GetById(int id) => Products.FirstOrDefault(p => p.id == id);
 
         public void Add(Product p)
         {
-            p.MaSp = Products.Any() ? Products.Max(x => x.MaSp) + 1 : 1;
+            p.id = Products.Any() ? Products.Max(x => x.id) + 1 : 1;
             Products.Add(p);
             SaveToFile();
         }

@@ -27,7 +27,7 @@ namespace WebApplication1.Controllers
         {
             if (HttpContext.Items.TryGetValue("products", out var productsObj) && productsObj is IEnumerable<Product> products)
             {
-                var product = products.FirstOrDefault(p => p.MaSp == id);
+                var product = products.FirstOrDefault(p => p.id == id);
                 if (product == null) return View("~/Views/Home/NotFound.cshtml");
                 return View(product);
             }

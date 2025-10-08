@@ -10,6 +10,7 @@ namespace BaiTap_03_23WebC_Nhom10
             var builder = WebApplication.CreateBuilder(args);
 
             builder.Services.AddControllersWithViews();
+            builder.Services.AddScoped<DatabaseHelper>();
             builder.Services.AddScoped<ProductService>(provider =>
             {
                 var env = provider.GetRequiredService<IWebHostEnvironment>();
@@ -30,7 +31,7 @@ namespace BaiTap_03_23WebC_Nhom10
             app.UseRouting();
 
             app.UseAuthorization();
-            app.UseMiddleware<Middleware.ProductMiddleware>();
+            //app.UseMiddleware<Middleware.ProductMiddleware>();
             app.MapStaticAssets();
             app.MapControllerRoute(
                  name: "areas",
