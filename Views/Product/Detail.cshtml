@@ -33,17 +33,14 @@
                 </div>
             </div>
 
-            @* Container chính để chèn HTML chi tiết sản phẩm *@
             <div class="col-md-8" id="product-detail-container">
                 <div class="product-content-right">
-                    @* Breadcrumb sẽ được chèn bằng JS *@
                     <div class="product-breadcroumb" id="detail-breadcrumb">
                         <span id="breadcrumb-home-placeholder"></span>
                         <span id="breadcrumb-category-placeholder"></span>
                         <span id="breadcrumb-product-name-placeholder"></span>
                     </div>
 
-                    @* Dữ liệu chi tiết sản phẩm sẽ được chèn vào đây *@
                     <div id="single-product-content">
                     </div>
 
@@ -61,31 +58,27 @@
                 return;
             }
 
-            // LẤY ID SẢN PHẨM TỪ URL (Giả sử Controller đã lấy ID và truyền vào ViewBag/Data Attribute)
-            // Nếu bạn đang dùng ASP.NET Core MVC, cách tốt nhất là truyền ID vào đây
-            // Giả định bạn có một biến JS chứa Product ID, ví dụ:
-            const currentProductId = parseInt('@(ViewContext.RouteData.Values["id"]?.ToString())') || null;
-
-            if (!currentProductId || currentProductId === 'null') {
-                // Nếu ID không lấy được (có thể do lỗi định tuyến hoặc ID bị thiếu)
-                console.log("Không tìm thấy Product ID trong Route Data!");
-                $('#single-product-content').html('<h2>Sản phẩm không tồn tại hoặc ID không hợp lệ.</h2>');
-                return;
-            }
-
-            // Hàm định dạng tiền tệ giống bên Index.cshtml
             const formatCurrency = (amount) => {
+                const amountValue = parseFloat(amount) || 0;
                 const formatter = new Intl.NumberFormat('vi-VN', {
                     style: 'currency',
                     currency: 'VND',
                     minimumFractionDigits: 0
                 });
-                return formatter.format(amount).replace("₫", " VNĐ");
+                return formatter.format(amountValue).replace("₫", " VNĐ").trim();
             };
 
-            // Hàm tạo HTML cho chi tiết sản phẩm
+            const currentProductId = parseInt('@(ViewContext.RouteData.Values["id"]?.ToString())') || null;
+
+            if (!currentProductId || currentProductId === 'null') {
+                console.log("Không tìm thấy Product ID trong Route Data!");
+                $('#single-product-content').html('<h2>Sản phẩm không tồn tại hoặc ID không hợp lệ.</h2>');
+            }
+
+
+
+           //Tạo là render phần Detail
             const renderProductDetail = (p) => {
-                // Tính toán giá (camelCase: price, discount)
                 let finalPrice = p.price * (1 - p.discount);
                 let finalPriceFormatted = formatCurrency(finalPrice);
                 let priceFormatted = formatCurrency(p.price);
@@ -97,14 +90,11 @@
                     priceHtml = `<ins>${priceFormatted}</ins>`;
                 }
 
-                // Giả định: Category Name cần phải được lấy từ API khác hoặc Model Product cần có Category Name
-                // Tạm dùng placeholder. Nếu bạn có Category Name trong Model Product, dùng p.categoryName
                 const categoryName = "Electronics";
 
-                // Dùng lại JS đã sửa ở bước 1, nhưng thêm dấu / vào HTML Breadcrumb:
                 $('#breadcrumb-home-placeholder').html(`<a href="/">Home</a>`);
                 $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${categoryName}</a>`);
-                $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="#">${p.productName}</a>`);
+                $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="/product/detail/${p.id}">${p.productName}</a>`);
 
                 return `
                     <div class="row">
@@ -169,7 +159,6 @@
                 `;
             };
 
-            // Hàm gọi API và Binding dữ liệu
             const loadProductDetail = (productId) => {
                 $.ajax({
                     url: `/API/API/${productId}`,
@@ -177,7 +166,6 @@
                     dataType: 'json',
                     success: function (product) {
                         if (product) {
-                            // Render HTML và chèn vào thẻ placeholder
                             const html = renderProductDetail(product);
                             $('#single-product-content').html(html);
                         } else {
@@ -191,8 +179,156 @@
                 });
             };
 
-            // Bắt đầu tải chi tiết sản phẩm
-            loadProductDetail(currentProductId);
+            if (currentProductId) {
+                loadProductDetail(currentProductId);
+            }
+
+
+           //Tạo là render phần Sidebar (List Product)
+            const renderSidebarProduct = (p) => {
+                const priceValue = parseFloat(p.price) || 0;
+                const discountValue = parseFloat(p.discount) || 0;
+                let finalPrice = priceValue * (1 - discountValue);
+                let finalPriceFormatted = formatCurrency(finalPrice);
+                let priceFormatted = formatCurrency(p.price);
+
+                let priceHtml = p.discount > 0
+                    ? `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`
+                    : `<ins>${priceFormatted}</ins>`;
+
+                return `
+                    <div class="thubmnail-recent">
+                        <img src="/img/${p.image}" class="recent-thumb" alt="${p.productName}">
+                        <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
+                        <div class="product-sidebar-price">
+                            ${priceHtml}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const loadSidebarProducts = () => {
+                $.ajax({
+                    url: '@Url.Content("~/API/API/GetProducts")',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (products) {
+                        let htmlContent = '';
+                        products.slice(0, 3).forEach(p => {
+                            htmlContent += renderSidebarProduct(p);
+                        });
+
+                        $('#latest-products-container').html(htmlContent);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải sản phẩm cho sidebar:', error);
+                        $('#latest-products-container').html('<p>Không thể tải sản phẩm mới nhất.</p>');
+                    }
+                });
+            };
+
+
+
+           //Tạo là render phần RecentPost
+           const renderRecentPost = (p) => {    
+                return `
+                    <li>
+                        <a href="/product/detail/${p.id}">${p.productName}</a>
+                    </li>
+                `;
+            };
+
+            const loadRecentPosts = () => {
+                $.ajax({
+                    url: '@Url.Content("~/API/API/GetProducts")',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (items) {
+                        let htmlContent = '<ul>';
+                        items.slice(0, 5).forEach(item => {
+                            htmlContent += renderRecentPost(item);
+                        });
+                        htmlContent += '</ul>';
+
+                        $('#recent-posts-container').html(htmlContent);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải bài viết gần đây:', error);
+                        $('#recent-posts-container').html('<ul><li>Không thể tải bài viết.</li></ul>');
+                    }
+                });
+            };
+
+
+            //Tạo là render phần RelatedProduct
+            const renderRelatedProduct = (p) => {
+                const priceValue = parseFloat(p.price) || 0;
+                const discountValue = parseFloat(p.discount) || 0;
+                let finalPrice = priceValue * (1 - discountValue);
+                let finalPriceFormatted = formatCurrency(finalPrice);
+                let priceFormatted = formatCurrency(p.price);
+
+                let priceHtml = p.discount > 0
+                    ? `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`
+                    : `<ins>${priceFormatted}</ins>`;
+
+                return `
+                    <div class="single-product">
+                        <div class="product-f-image">
+                            <img src="/img/${p.image}" alt="${p.productName}">
+                        </div>
+
+                        <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
+
+                        <div class="product-carousel-price">
+                            ${priceHtml}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const loadRelatedProducts = () => {
+                const $carousel = $('#related-products-container');
+
+                $.ajax({
+                    url: '@Url.Content("~/API/API/GetProducts")',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (products) {
+                        let htmlContent = '';
+                        products.filter(p => p.id !== currentProductId).slice(0, 6).forEach(p => {
+                            htmlContent += renderRelatedProduct(p);
+                        });
+
+                        $carousel.html(htmlContent);
+
+                        if ($carousel.hasClass('owl-loaded')) {
+                            $carousel.trigger('destroy.owl.carousel');
+                        }
+
+                        $carousel.owlCarousel({
+                            loop: true,
+                            nav: true,
+                            margin: 20,
+                            responsiveClass: true,
+                            responsive: {
+                                0: { items: 1, nav: true },
+                                600: { items: 3, nav: false },
+                                1000: { items: 4, nav: true, loop: false }
+                            }
+                        });
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải sản phẩm liên quan:', error);
+                        $carousel.html('<p>Không thể tải sản phẩm liên quan.</p>');
+                    }
+                });
+            };
+            //Load Partial
+            loadSidebarProducts();
+            loadRecentPosts();
+            loadRelatedProducts();
         });
     </script>
 }

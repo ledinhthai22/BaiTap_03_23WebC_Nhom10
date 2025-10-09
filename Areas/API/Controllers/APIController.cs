@@ -6,7 +6,7 @@ using Microsoft.Data.SqlClient;
 
 namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
 {
-    [Area("API")]
+    [Area("api")]
     [Route("[area]/[controller]")]
     public class APIController : Controller
     {
@@ -18,7 +18,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("GetProducts")]
         public IActionResult GetProducts()
         {
             List<Product> products = new List<Product>();
