@@ -32,20 +32,21 @@
             }
 
             const latestProduct = (p) => {
-                // SỬA: p.price và p.discount (camelCase mới)
-                let finalPrice = p.price * (1 - p.discount);
+                // KHẮC PHỤC LỖI NaN: Chuyển đổi rõ ràng sang số
+                const priceValue = parseFloat(p.price) || 0;
+                const discountValue = parseFloat(p.discount) || 0;
+
+                let finalPrice = priceValue * (1 - discountValue);
                 let price = '';
                 let finalPriceFormatted = formatCurrency(finalPrice);
-                let priceFormatted = formatCurrency(p.price);
+                let priceFormatted = formatCurrency(priceValue);
 
-                // SỬA: p.discount (camelCase mới)
-                if (p.discount > 0) {
+                if (discountValue > 0) {
                     price = `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`;
                 } else {
                     price = `<ins>${priceFormatted}</ins>`;
                 }
 
-                // SỬA: p.id, p.image, p.productName (camelCase mới)
                 const detail = `@Url.Action("Detail", "Product")/${p.id}`;
                 const cart = `@Url.Action("cart", "product")`;
 
@@ -67,20 +68,20 @@
             };
 
             const widgetProduct = (p) => {
-                // SỬA: p.price và p.discount (camelCase mới)
-                let finalPrice = p.price * (1 - p.discount);
+                const priceValue = parseFloat(p.price) || 0;
+                const discountValue = parseFloat(p.discount) || 0;
+
+                let finalPrice = priceValue * (1 - discountValue);
                 let price = '';
                 let finalPriceFormatted = formatCurrency(finalPrice);
-                let priceFormatted = formatCurrency(p.price);
+                let priceFormatted = formatCurrency(priceValue);
 
-                // SỬA: p.discount (camelCase mới)
-                if (p.discount > 0) {
+                if (discountValue > 0) {
                     price = `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`;
                 } else {
                     price = `<ins>${priceFormatted}</ins>`;
                 }
 
-                // SỬA: p.id, p.image, p.productName (camelCase mới)
                 const detail = `@Url.Action("Detail", "Product")/${p.id}`;
                 return `
                     <div class="single-wid-product">
@@ -146,11 +147,13 @@
 
                         products.slice(6, 9).forEach(p => { topNewHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(3) .single-product-widget').append(topNewHtml);
+                    } else {
+                        $('.maincontent-area').html('<div class="container"><div class="row"><div class="col-md-12"><h2 class="section-title">Không tìm thấy sản phẩm nào.</h2></div></div></div>');
                     }
                 },
                 error: function (xhr, status, error) {
-                    console.error(status, error);
-                }
+                    console.error("LỖI KHI TẢI SẢN PHẨM:", status, error);
+                }   
             });
         });
     </script>
