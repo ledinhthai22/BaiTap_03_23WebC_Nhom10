@@ -123,5 +123,34 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
             }
             return Json(product);
         }
+        [HttpGet("categories")]
+        public IActionResult getCategory()
+        {
+            List<Category> categories = new List<Category>();
+            string query = @"SELECT ID, CATEGORY_NAME, STATUS FROM dbo.CATEGORY";
+            try
+            {
+                DataTable dt = _dbHelper.ExecuteQuery(query);
+                foreach (DataRow row in dt.Rows)
+                {
+                    categories.Add(new Category
+                    {
+                        id = Convert.ToInt32(row["ID"]),
+                        categoryName = row["CATEGORY_NAME"].ToString(),
+                        status = row["STATUS"] == DBNull.Value ? (bool?)null : (Convert.ToInt32(row["STATUS"]) == 1)
+                    });
+                }
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new
+                {
+                    error = "Lỗi khi truy vấn cơ sở dữ liệu.",
+                    detail = ex.Message
+                });
+
+            }
+            return Json(categories);
+        }
     }
 }
