@@ -6,7 +6,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.Admin.Controllers
     [Route("Admin/[Controller]")]
     public class HomeController : Controller
     {
-        [Route("Index")]
+        [HttpGet("")]
         public IActionResult Index()
         {
             return View();
