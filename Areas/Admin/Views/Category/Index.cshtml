@@ -25,13 +25,12 @@
                     dataType: 'json',
                     success: function(data) {
                         let html = '<table class="table table-bordered">';
-                        html += '<thead><tr><th>ID</th><th>Tên thể loại</th><th>Trạng thái</th><th>Action</th></tr></thead><tbody>';
+                        html += '<thead><tr><th>ID</th><th>Tên thể loại</th><th>Action</th></tr></thead><tbody>';
 
                         $.each(data, function(index, category) {
                             html += `<tr>
                                 <td>${category.id}</td>
                                 <td>${category.categoryName}</td>
-                                <td>${category.status ? 'Hoạt động' : 'Không hoạt động'}</td>
                                 <td>
                                     <a href="/Admin/Category/Edit/${category.id}" class="btn btn-sm btn-primary">Sửa</a>
                                     <a href="/Admin/Category/Delete/${category.id}" class="btn btn-sm btn-danger">Xóa</a>
