@@ -15,8 +15,10 @@ namespace BaiTap_03_23WebC_Nhom10.Service
 
         public SqlConnection GetConnection()
         {
+            
             return new SqlConnection(_connectionString);
         }
+       
         public DataTable ExecuteQuery(string query, SqlParameter[] parameters = null)
         {
             using (var connection = GetConnection())
