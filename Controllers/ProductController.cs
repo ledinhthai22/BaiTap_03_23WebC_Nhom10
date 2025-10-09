@@ -23,15 +23,16 @@ namespace WebApplication1.Controllers
             return View("~/Views/Home/NotFound.cshtml"); 
         }
 
-        public IActionResult Detail(int id = 1)
+        public IActionResult Detail(int id)
         {
-            if (HttpContext.Items.TryGetValue("products", out var productsObj) && productsObj is IEnumerable<Product> products)
+            /*if (HttpContext.Items.TryGetValue("products", out var productsObj) && productsObj is IEnumerable<Product> products)
             {
-                var product = products.FirstOrDefault(p => p.MaSp == id);
+                var product = products.FirstOrDefault(p => p.id == id);
                 if (product == null) return View("~/Views/Home/NotFound.cshtml");
                 return View(product);
             }
-            return View("~/Views/Home/NotFound.cshtml");
+            return View("~/Views/Home/NotFound.cshtml");*/
+            return View();
         }
 
         public IActionResult Cart()

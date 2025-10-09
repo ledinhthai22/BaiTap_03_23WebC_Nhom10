@@ -1,10 +1,9 @@
 using System.Diagnostics;
-using BaiTap_02_23WebC_Nhom10.Models;
 using BaiTap_03_23WebC_Nhom10.Models;
 using BaiTap_03_23WebC_Nhom10.Service;
 using Microsoft.AspNetCore.Mvc;
 
-namespace BaiTap_02_23WebC_Nhom10.Controllers
+namespace BaiTap_03_23WebC_Nhom10.Controllers
 {
     public class HomeController : Controller
     {
@@ -17,11 +16,7 @@ namespace BaiTap_02_23WebC_Nhom10.Controllers
 
         public IActionResult Index()
         {
-            if (HttpContext.Items.TryGetValue("products", out var productsObj) && productsObj is List<Product> products)
-            {
-                return View(products);
-            }
-            return View(new List<Product>());
+            return View();
         }
 
         public IActionResult Privacy()

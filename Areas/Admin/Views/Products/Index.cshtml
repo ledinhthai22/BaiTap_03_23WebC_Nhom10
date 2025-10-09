@@ -4,5 +4,95 @@
 @{
     Layout = "_Layout";
 }
-@section Title {Danh sach san pham}
-<a asp-area="Admin" asp-controller="Products" asp-action="Create">Thêm sản phẩm</a>
+@section Title {Danh sách sản phẩm}
+<a asp-area="Admin" asp-controller="Products" asp-action="Create" class="btn btn-primary">
+    <i class="bi bi-plus-circle me-1"></i> Thêm sản phẩm
+</a>
+<br />
+<div id="productList">
+    <!-- Bảng sản phẩm sẽ load ở đây -->
+</div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center" id="pagination">
+        <!-- Nút phân trang sẽ load ở đây -->
+    </ul>
+</nav>
+@section js {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            const pageSize = 5; // số sản phẩm mỗi trang
+            let currentPage = 1;
+            let productsData = []; // lưu tất cả sản phẩm
+
+            // 1. Lấy dữ liệu từ API
+            $.ajax({
+                url: '/API/API', // URL API GetProducts
+                type: 'GET',
+                dataType: 'json',
+                success: function(data) {
+                    productsData = data;
+                    renderTable(currentPage);
+                    renderPagination();
+                },
+                error: function(err) {
+                    console.error(err);
+                    $('#productList').html('<p class="text-danger">Không tải được dữ liệu</p>');
+                }
+            });
+
+            // 2. Render bảng theo trang
+            function renderTable(page) {
+                let start = (page - 1) * pageSize;
+                let end = start + pageSize;
+                let pageData = productsData.slice(start, end);
+
+                let html = '<table class="table table-bordered table-striped">';
+                html += '<thead><tr><th>ID</th><th>Tên</th><th>Giá</th><th>Discount</th><th>Ảnh</th><th>Category</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+
+                pageData.forEach(p => {
+                    html += `<tr>
+                        <td>${p.id}</td>
+                        <td>${p.productName}</td>
+                        <td>${p.price}</td>
+                        <td>${p.discount}</td>
+                        <td><img src="${p.image}" width="50" height="50"/></td>
+                        <td>${p.categoryID}</td>
+                        <td>${p.status ? 'Hoạt động' : 'Không hoạt động'}</td>
+                        <td>
+                            <a href="/Admin/Products/Edit/${p.id}" class="btn btn-sm btn-primary">Sửa</a>
+                            <a href="/Admin/Products/Delete/${p.id}" class="btn btn-sm btn-danger">Xóa</a>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                $('#productList').html(html);
+            }
+
+            // 3. Render phân trang
+            function renderPagination() {
+                const totalPages = Math.ceil(productsData.length / pageSize);
+                let html = '';
+
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                                <a class="page-link" href="#">${i}</a>
+                            </li>`;
+                }
+
+                $('#pagination').html(html);
+
+                // Click vào trang
+                $('#pagination .page-link').click(function(e) {
+                    e.preventDefault();
+                    currentPage = parseInt($(this).text());
+                    renderTable(currentPage);
+                    renderPagination();
+                });
+            }
+        });
+    </script>
+}
+

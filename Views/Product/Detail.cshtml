@@ -1,12 +1,8 @@
-﻿@using System.Globalization; 
-@model BaiTap_03_23WebC_Nhom10.Models.Product
-
+﻿@using System.Text.Json
 @section title {
-        Product - eElectronics - HTML eCommerce Template
+    Product - eElectronics - HTML eCommerce Template
 }
 @section css {
-}
-@section js {
 }
 @section subtitle {
     <div class="product-big-title-area">
@@ -20,12 +16,6 @@
             </div>
         </div>
     </div>
-}
-@{
-    var culture = new CultureInfo("vi-VN");
-    double discountedPrice = Model.DonGia * (1 - Model.DonGiaKhuyenMai);
-    string formattedDiscountedPrice = discountedPrice.ToString("N0", culture);
-    string formattedOriginalPrice = Model.DonGia.ToString("N0", culture);
 }
 <div class="single-product-area">
     <div class="zigzag-bottom"></div>
@@ -42,37 +32,86 @@
                     @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Recent-Posts.cshtml")
                 </div>
             </div>
-            <div class="col-md-8">
+
+            <div class="col-md-8" id="product-detail-container">
                 <div class="product-content-right">
-                    <div class="product-breadcroumb">
-                        <a asp-controller="home" asp-action="index">Home</a>
-                        <a href="#">@Model.LoaiSp</a>
-                        <a asp-controller="product" asp-action="detail" asp-route-id="@Model.MaSp">@Model.TenSp</a>
+                    <div class="product-breadcroumb" id="detail-breadcrumb">
+                        <span id="breadcrumb-home-placeholder"></span>
+                        <span id="breadcrumb-category-placeholder"></span>
+                        <span id="breadcrumb-product-name-placeholder"></span>
                     </div>
+
+                    <div id="single-product-content">
+                    </div>
+
+                    @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Related-Products.cshtml")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section js {
+    <script>
+        $(document).ready(function () {
+            if (typeof jQuery == 'undefined') {
+                return;
+            }
+
+            const formatCurrency = (amount) => {
+                const amountValue = parseFloat(amount) || 0;
+                const formatter = new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    minimumFractionDigits: 0
+                });
+                return formatter.format(amountValue).replace("₫", " VNĐ").trim();
+            };
+
+            const currentProductId = parseInt('@(ViewContext.RouteData.Values["id"]?.ToString())') || null;
+
+            if (!currentProductId || currentProductId === 'null') {
+                console.log("Không tìm thấy Product ID trong Route Data!");
+                $('#single-product-content').html('<h2>Sản phẩm không tồn tại hoặc ID không hợp lệ.</h2>');
+            }
+
+
+
+           //Tạo là render phần Detail
+            const renderProductDetail = (p) => {
+                let finalPrice = p.price * (1 - p.discount);
+                let finalPriceFormatted = formatCurrency(finalPrice);
+                let priceFormatted = formatCurrency(p.price);
+
+                let priceHtml = '';
+                if (p.discount > 0) {
+                    priceHtml = `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`;
+                } else {
+                    priceHtml = `<ins>${priceFormatted}</ins>`;
+                }
+
+                const categoryName = "Electronics";
+
+                $('#breadcrumb-home-placeholder').html(`<a href="/">Home</a>`);
+                $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${categoryName}</a>`);
+                $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="/product/detail/${p.id}">${p.productName}</a>`);
+
+                return `
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="product-images">
                                 <div class="product-main-img">
-                                    <img src="~/img/@Model.HinhAnh" alt="@Model.TenSp">
+                                    <img src="/img/${p.image}" alt="${p.productName}">
                                 </div>
                             </div>
                         </div>
                         <div class="col-sm-6">
                             <div class="product-inner">
-                                <h2 class="product-name">@Model.TenSp</h2>
+                                <h2 class="product-name">${p.productName}</h2>
                                 <div class="product-inner-price">
-                                    @if (Model.DonGiaKhuyenMai > 0)
-                                    {
-                                        <ins>@formattedDiscountedPrice VNĐ</ins>
-                                        <del> @formattedOriginalPrice VNĐ </del > 
-                                    }
-                                    else
-                                    {
-                                        <ins>@formattedOriginalPrice VNĐ</ins>
-                                                                       
-                                    }
+                                    ${priceHtml}
                                 </div>
-                                <form action="/cart/add/@Model.MaSp" class="cart">
+                                <form action="/cart/add/${p.id}" class="cart">
                                     <div class="quantity">
                                         <input type="number" size="4" class="input-text qty text" title="Qty" value="1" name="quantity" min="1" step="1">
                                     </div>
@@ -80,7 +119,7 @@
                                 </form>
                                 <div class="product-inner-category">
                                     <p>
-                                        Category: <a href="#">@Model.LoaiSp</a>
+                                        Category: <a href="#">${categoryName}</a>
                                     </p>
                                 </div>
                                 <div role="tabpanel">
@@ -91,7 +130,7 @@
                                     <div class="tab-content">
                                         <div role="tabpanel" class="tab-pane fade in active" id="home">
                                             <h2>Product Description</h2>
-                                            <p>@Model.MoTa</p>
+                                            <p>${p.description}</p>
                                         </div>
                                         <div role="tabpanel" class="tab-pane fade" id="profile">
                                             <h2>Reviews</h2>
@@ -117,9 +156,179 @@
                             </div>
                         </div>
                     </div>
-                    @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Related-Products.cshtml")
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+                `;
+            };
+
+            const loadProductDetail = (productId) => {
+                $.ajax({
+                    url: `/API/API/${productId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (product) {
+                        if (product) {
+                            const html = renderProductDetail(product);
+                            $('#single-product-content').html(html);
+                        } else {
+                            $('#single-product-content').html('<h2>Sản phẩm không tồn tại.</h2>');
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("Lỗi khi tải chi tiết sản phẩm: ", textStatus, errorThrown);
+                        $('#single-product-content').html('<h2>Có lỗi xảy ra khi tải dữ liệu.</h2>');
+                    }
+                });
+            };
+
+            if (currentProductId) {
+                loadProductDetail(currentProductId);
+            }
+
+
+           //Tạo là render phần Sidebar (List Product)
+            const renderSidebarProduct = (p) => {
+                const priceValue = parseFloat(p.price) || 0;
+                const discountValue = parseFloat(p.discount) || 0;
+                let finalPrice = priceValue * (1 - discountValue);
+                let finalPriceFormatted = formatCurrency(finalPrice);
+                let priceFormatted = formatCurrency(p.price);
+
+                let priceHtml = p.discount > 0
+                    ? `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`
+                    : `<ins>${priceFormatted}</ins>`;
+
+                return `
+                    <div class="thubmnail-recent">
+                        <img src="/img/${p.image}" class="recent-thumb" alt="${p.productName}">
+                        <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
+                        <div class="product-sidebar-price">
+                            ${priceHtml}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const loadSidebarProducts = () => {
+                $.ajax({
+                    url: '@Url.Content("~/API/API/GetProducts")',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (products) {
+                        let htmlContent = '';
+                        products.slice(0, 3).forEach(p => {
+                            htmlContent += renderSidebarProduct(p);
+                        });
+
+                        $('#latest-products-container').html(htmlContent);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải sản phẩm cho sidebar:', error);
+                        $('#latest-products-container').html('<p>Không thể tải sản phẩm mới nhất.</p>');
+                    }
+                });
+            };
+
+
+
+           //Tạo là render phần RecentPost
+           const renderRecentPost = (p) => {    
+                return `
+                    <li>
+                        <a href="/product/detail/${p.id}">${p.productName}</a>
+                    </li>
+                `;
+            };
+
+            const loadRecentPosts = () => {
+                $.ajax({
+                    url: '@Url.Content("~/API/API/GetProducts")',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (items) {
+                        let htmlContent = '<ul>';
+                        items.slice(0, 5).forEach(item => {
+                            htmlContent += renderRecentPost(item);
+                        });
+                        htmlContent += '</ul>';
+
+                        $('#recent-posts-container').html(htmlContent);
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải bài viết gần đây:', error);
+                        $('#recent-posts-container').html('<ul><li>Không thể tải bài viết.</li></ul>');
+                    }
+                });
+            };
+
+
+            //Tạo là render phần RelatedProduct
+            const renderRelatedProduct = (p) => {
+                const priceValue = parseFloat(p.price) || 0;
+                const discountValue = parseFloat(p.discount) || 0;
+                let finalPrice = priceValue * (1 - discountValue);
+                let finalPriceFormatted = formatCurrency(finalPrice);
+                let priceFormatted = formatCurrency(p.price);
+
+                let priceHtml = p.discount > 0
+                    ? `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`
+                    : `<ins>${priceFormatted}</ins>`;
+
+                return `
+                    <div class="single-product">
+                        <div class="product-f-image">
+                            <img src="/img/${p.image}" alt="${p.productName}">
+                        </div>
+
+                        <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
+
+                        <div class="product-carousel-price">
+                            ${priceHtml}
+                        </div>
+                    </div>
+                `;
+            };
+
+            const loadRelatedProducts = () => {
+                const $carousel = $('#related-products-container');
+
+                $.ajax({
+                    url: '@Url.Content("~/API/API/GetProducts")',
+                    method: 'GET',
+                    dataType: 'json',
+                    success: function (products) {
+                        let htmlContent = '';
+                        products.filter(p => p.id !== currentProductId).slice(0, 6).forEach(p => {
+                            htmlContent += renderRelatedProduct(p);
+                        });
+
+                        $carousel.html(htmlContent);
+
+                        if ($carousel.hasClass('owl-loaded')) {
+                            $carousel.trigger('destroy.owl.carousel');
+                        }
+
+                        $carousel.owlCarousel({
+                            loop: true,
+                            nav: true,
+                            margin: 20,
+                            responsiveClass: true,
+                            responsive: {
+                                0: { items: 1, nav: true },
+                                600: { items: 3, nav: false },
+                                1000: { items: 4, nav: true, loop: false }
+                            }
+                        });
+
+                    },
+                    error: function (xhr, status, error) {
+                        console.error('Lỗi khi tải sản phẩm liên quan:', error);
+                        $carousel.html('<p>Không thể tải sản phẩm liên quan.</p>');
+                    }
+                });
+            };
+            //Load Partial
+            loadSidebarProducts();
+            loadRecentPosts();
+            loadRelatedProducts();
+        });
+    </script>
+}
