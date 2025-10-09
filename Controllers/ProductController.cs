@@ -9,18 +9,8 @@ namespace WebApplication1.Controllers
     {
         public IActionResult Index(int page = 1, int pageSize = 8)
         {
-            if (HttpContext.Items.TryGetValue("products", out var productsObj) && productsObj is IEnumerable<Product> products)
-            {
-                var productList = products.ToList();
-                var pagedProduct = productList.Skip((page - 1) * pageSize).Take(pageSize).ToList();
-
-                ViewBag.CurrentPage = page;
-                ViewBag.TotalItems = productList.Count;
-                ViewBag.PageSize = pageSize;
-
-                return View(pagedProduct);
-            }
-            return View("~/Views/Home/NotFound.cshtml"); 
+           
+            return View(); 
         }
 
         public IActionResult Detail(int id)
