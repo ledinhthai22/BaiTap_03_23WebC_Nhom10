@@ -11,80 +11,100 @@
     <form id="frmAddProduct" enctype="multipart/form-data">
         <div class="row g-3">
             <div class="col-12">
+
+                <!-- Tên sản phẩm -->
                 <label class="form-label fw-bold">Tên sản phẩm</label>
                 <input type="text" id="PRODUCT_NAME" class="form-control" required>
 
+                <!-- Giá -->
                 <label class="form-label fw-bold mt-3">Giá</label>
                 <input type="number" id="PRICE" class="form-control" required>
 
+                <!-- Số lượng -->
                 <label class="form-label fw-bold mt-3">Số lượng</label>
                 <input type="number" id="QUALITY" class="form-control">
 
+                <!-- Giảm giá -->
                 <label class="form-label fw-bold mt-3">Giảm giá (%)</label>
                 <input type="number" id="DISCOUNT" class="form-control">
 
+                <!-- Mô tả -->
                 <label class="form-label fw-bold mt-3">Mô tả</label>
                 <textarea id="DESCRIPTION" rows="4" class="form-control"></textarea>
 
+                <!-- Danh mục -->
                 <label class="form-label fw-bold mt-3">Danh mục</label>
-                <div class="d-flex align-items-center">
+                <div class="d-flex align-items-center mb-2" id="categoryContainer">
                     <select id="CATEGORY_ID" class="form-select me-3" style="width: 250px;">
                         <option value="">-- Chọn danh mục --</option>
                         <option value="1">Điện thoại</option>
                         <option value="2">Laptop</option>
                     </select>
-                    <button type="button" class="btn btn-success flex-shrink-0"
-                            data-bs-toggle="modal" data-bs-target="#modalAddCategory">
+                    <button type="button" class="btn btn-success flex-shrink-0" id="btnMoreCategory">
                         More Than
                     </button>
                 </div>
 
-                
+                <!-- Input thêm danh mục, ẩn mặc định -->
+                <div class="d-flex align-items-center mb-3" id="newCategoryContainer" style="display: none;">
+                    <input type="text" id="newCategoryName" class="form-control me-2" placeholder="Nhập tên danh mục...">
+                    <button type="button" class="btn btn-success" id="btnSaveCategory">Thêm</button>
+                </div>
 
+                <!-- Tag -->
                 <label class="form-label fw-bold mt-3">Tag</label>
-                <input type="number" id="TAG_ID" class="form-control">
-                <br />
+                <input type="text" id="TAG_ID" class="form-control">
+
+                <!-- Hình ảnh sản phẩm -->
                 <label class="form-label fw-bold mt-3">Hình ảnh sản phẩm</label>
                 <input type="file" id="IMAGE" class="form-control" multiple accept="image/*" onchange="previewImages(event)">
-                <br />
                 <div id="previewContainer" class="d-flex flex-wrap mt-2 gap-2"></div>
+
             </div>
         </div>
-        <br />
-        <div class="text-center mt-4">
+
+        <!-- Nút hành động -->
+        <div class="text-center mt-4 d-flex justify-content-center gap-2">
             <button type="button" id="btnAdd" class="btn btn-outline-primary">
                 <i class="bi bi-save"></i> Lưu sản phẩm
+            </button>
+
+            <button type="button" id="btnBack" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left"></i> Quay lại
             </button>
         </div>
     </form>
 </div>
 
-
-<!-- Modal Thêm Danh Mục -->
-<div class="modal" id="modalAddCategory" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header bg-success text-white text-center">
-                <h5 class="modal-title w-100 fs-4 fw-bold" id="modalAddCategoryLabel">
-                    <i class="bi bi-plus-circle"></i> Thêm danh mục mới
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-
-            <div class="modal-body">
-                <label class="form-label fw-bold">Tên danh mục</label>
-                <input type="text" id="newCategoryName" class="form-control" placeholder="Nhập tên danh mục...">
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-                <button type="button" class="btn btn-success" id="btnSaveCategory">Lưu</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 @section js {
     <script>
+        // Toggle input thêm danh mục
+        document.getElementById("btnMoreCategory").addEventListener("click", () => {
+            const container = document.getElementById("newCategoryContainer");
+            container.style.display = (container.style.display === "none" || container.style.display === "") ? "flex" : "none";
+        });
+
+        // Thêm danh mục bằng Ajax
+        document.getElementById("btnSaveCategory").addEventListener("click", () => {
+            const name = document.getElementById("newCategoryName").value.trim();
+            if (!name) return alert("Vui lòng nhập tên danh mục!");
+
+            $.ajax({
+                url: '/Admin/Categories/AddCategory',
+                type: 'POST',
+                data: { name },
+                success: function (newCat) {
+                    $('#CATEGORY_ID').append(`<option value="${newCat.id}">${newCat.name}</option>`);
+                    $('#CATEGORY_ID').val(newCat.id);
+                    document.getElementById("newCategoryContainer").style.display = "none";
+                    $('#newCategoryName').val('');
+                },
+                error: function () {
+                    alert("Lỗi khi thêm danh mục!");
+                }
+            });
+        });
+
         // Xem trước hình ảnh
         function previewImages(event) {
             const container = document.getElementById("previewContainer");
@@ -104,26 +124,14 @@
             }
         }
 
-        // Thêm danh mục bằng Ajax
-        document.getElementById("btnSaveCategory").addEventListener("click", () => {
-            const name = document.getElementById("newCategoryName").value.trim();
-            if (!name) return alert("Vui lòng nhập tên danh mục!");
+        // Lưu sản phẩm (có thể thêm Ajax submit)
+        document.getElementById("btnAdd").addEventListener("click", () => {
+            alert("Bạn có thể thêm Ajax submit ở đây!");
+        });
 
-            $.ajax({
-                url: '/Admin/Categories/AddCategory', // API mẫu
-                type: 'POST',
-                data: { name },
-                success: function (newCat) {
-                    $('#CATEGORY_ID').append(`<option value="${newCat.id}">${newCat.name}</option>`);
-                    $('#CATEGORY_ID').val(newCat.id);
-                    $('#modalAddCategory').modal('hide');
-                    $('#newCategoryName').val('');
-                },
-                error: function () {
-                    alert("Lỗi khi thêm danh mục!");
-                }
-            });
+        // Quay lại trang danh sách sản phẩm
+        document.getElementById("btnBack").addEventListener("click", () => {
+            window.location.href = '@Url.Action("Index", "Products")';
         });
     </script>
 }
-
