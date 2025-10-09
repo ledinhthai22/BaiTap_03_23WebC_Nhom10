@@ -9,5 +9,48 @@
         <i class="bi bi-plus-circle me-1"></i> Thêm thể loại
     </a>
 </div>
+<br />
+<div id="categoryList">
+    <!-- Danh sách thể loại sẽ load ở đây -->
+</div>
+@section js {
+    <script>
+        $(document).ready(function() {
+            loadCategories();
+
+            function loadCategories() {
+                $.ajax({
+                    url: '/API/API/categories', // URL API
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function(data) {
+                        let html = '<table class="table table-bordered">';
+                        html += '<thead><tr><th>ID</th><th>Tên thể loại</th><th>Trạng thái</th><th>Action</th></tr></thead><tbody>';
+
+                        $.each(data, function(index, category) {
+                            html += `<tr>
+                                <td>${category.id}</td>
+                                <td>${category.categoryName}</td>
+                                <td>${category.status ? 'Hoạt động' : 'Không hoạt động'}</td>
+                                <td>
+                                    <a href="/Admin/Category/Edit/${category.id}" class="btn btn-sm btn-primary">Sửa</a>
+                                    <a href="/Admin/Category/Delete/${category.id}" class="btn btn-sm btn-danger">Xóa</a>
+                                </td>
+                            </tr>`;
+                        });
+
+                        html += '</tbody></table>';
+                        $('#categoryList').html(html);
+                    },
+                    error: function(err) {
+                        console.error(err);
+                        $('#categoryList').html('<p class="text-danger">Không tải được dữ liệu</p>');
+                    }
+                });
+            }
+        });
+    </script>
+}
+
 
 
