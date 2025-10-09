@@ -13,6 +13,9 @@
     <meta name="author" content="">
 
     <title>SB Admin 2 - Bootstrap Admin Theme</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <link rel="stylesheet" href="~/css/style.css" />
     @Html.Partial("Partial/_css-admin")
     @RenderSection("css", required: false)
 </head>
@@ -46,6 +49,10 @@
         </div>
     </div>
     <partial name="Partial/_js-admin" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
     @RenderSection("js", required: false)
 </body>
 

@@ -1,125 +1,198 @@
-﻿@* @using System.Globalization;  *@
-@* @model BaiTap_03_23WebC_Nhom10.Models.Product *@
+﻿@using System.Text.Json
+@section title {
+    Product - eElectronics - HTML eCommerce Template
+}
+@section css {
+}
+@section subtitle {
+    <div class="product-big-title-area">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-12">
+                    <div class="product-bit-title text-center">
+                        <h2>Product</h2>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<div class="single-product-area">
+    <div class="zigzag-bottom"></div>
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="single-sidebar">
+                    @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Search.cshtml")
+                </div>
+                <div class="single-sidebar">
+                    @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_List-Product.cshtml")
+                </div>
+                <div class="single-sidebar">
+                    @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Recent-Posts.cshtml")
+                </div>
+            </div>
 
-@* @section title { *@
-@*         Product - eElectronics - HTML eCommerce Template *@
-@* } *@
-@* @section css { *@
-@* } *@
-@* @section js { *@
-@* } *@
-@* @section subtitle { *@
-@*     <div class="product-big-title-area"> *@
-@*         <div class="container"> *@
-@*             <div class="row"> *@
-@*                 <div class="col-md-12"> *@
-@*                     <div class="product-bit-title text-center"> *@
-@*                         <h2>Product</h2> *@
-@*                     </div> *@
-@*                 </div> *@
-@*             </div> *@
-@*         </div> *@
-@*     </div> *@
-@* } *@
-@* @{ *@
-@*     var culture = new CultureInfo("vi-VN"); *@
-@*     double discountedPrice = Model.DonGia * (1 - Model.DonGiaKhuyenMai); *@
-@*     string formattedDiscountedPrice = discountedPrice.ToString("N0", culture); *@
-@*     string formattedOriginalPrice = Model.DonGia.ToString("N0", culture); *@
-@* } *@
-@* <div class="single-product-area"> *@
-@*     <div class="zigzag-bottom"></div> *@
-@*     <div class="container"> *@
-@*         <div class="row"> *@
-@*             <div class="col-md-4"> *@
-@*                 <div class="single-sidebar"> *@
-@*                     @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Search.cshtml") *@
-@*                 </div> *@
-@*                 <div class="single-sidebar"> *@
-@*                     @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_List-Product.cshtml") *@
-@*                 </div> *@
-@*                 <div class="single-sidebar"> *@
-@*                     @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Recent-Posts.cshtml") *@
-@*                 </div> *@
-@*             </div> *@
-@*             <div class="col-md-8"> *@
-@*                 <div class="product-content-right"> *@
-@*                     <div class="product-breadcroumb"> *@
-@*                         <a asp-controller="home" asp-action="index">Home</a> *@
-@*                         <a href="#">@Model.LoaiSp</a> *@
-@*                         <a asp-controller="product" asp-action="detail" asp-route-id="@Model.MaSp">@Model.TenSp</a> *@
-@*                     </div> *@
-@*                     <div class="row"> *@
-@*                         <div class="col-sm-6"> *@
-@*                             <div class="product-images"> *@
-@*                                 <div class="product-main-img"> *@
-@*                                     <img src="~/img/@Model.HinhAnh" alt="@Model.TenSp"> *@
-@*                                 </div> *@
-@*                             </div> *@
-@*                         </div> *@
-@*                         <div class="col-sm-6"> *@
-@*                             <div class="product-inner"> *@
-@*                                 <h2 class="product-name">@Model.TenSp</h2> *@
-@*                                 <div class="product-inner-price"> *@
-@*                                     @if (Model.DonGiaKhuyenMai > 0) *@
-@*                                     { *@
-@*                                         <ins>@formattedDiscountedPrice VNĐ</ins> *@
-@*                                         <del> @formattedOriginalPrice VNĐ </del >  *@
-@*                                     } *@
-@*                                     else *@
-@*                                     { *@
-@*                                         <ins>@formattedOriginalPrice VNĐ</ins> *@
-                                                                       
-@*                                     } *@
-@*                                 </div> *@
-@*                                 <form action="/cart/add/@Model.MaSp" class="cart"> *@
-@*                                     <div class="quantity"> *@
-@*                                         <input type="number" size="4" class="input-text qty text" title="Qty" value="1" name="quantity" min="1" step="1"> *@
-@*                                     </div> *@
-@*                                     <button class="add_to_cart_button" type="submit">Add to cart</button> *@
-@*                                 </form> *@
-@*                                 <div class="product-inner-category"> *@
-@*                                     <p> *@
-@*                                         Category: <a href="#">@Model.LoaiSp</a> *@
-@*                                     </p> *@
-@*                                 </div> *@
-@*                                 <div role="tabpanel"> *@
-@*                                     <ul class="product-tab" role="tablist"> *@
-@*                                         <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Description</a></li> *@
-@*                                         <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a></li> *@
-@*                                     </ul> *@
-@*                                     <div class="tab-content"> *@
-@*                                         <div role="tabpanel" class="tab-pane fade in active" id="home"> *@
-@*                                             <h2>Product Description</h2> *@
-@*                                             <p>@Model.MoTa</p> *@
-@*                                         </div> *@
-@*                                         <div role="tabpanel" class="tab-pane fade" id="profile"> *@
-@*                                             <h2>Reviews</h2> *@
-@*                                             <div class="submit-review"> *@
-@*                                                 <p><label for="name">Name</label> <input name="name" type="text"></p> *@
-@*                                                 <p><label for="email">Email</label> <input name="email" type="email"></p> *@
-@*                                                 <div class="rating-chooser"> *@
-@*                                                     <p>Your rating</p> *@
-@*                                                     <div class="rating-wrap-post"> *@
-@*                                                         <i class="fa fa-star"></i> *@
-@*                                                         <i class="fa fa-star"></i> *@
-@*                                                         <i class="fa fa-star"></i> *@
-@*                                                         <i class="fa fa-star"></i> *@
-@*                                                         <i class="fa fa-star"></i> *@
-@*                                                     </div> *@
-@*                                                 </div> *@
-@*                                                 <p><label for="review">Your review</label> <textarea name="review" id="" cols="30" rows="10"></textarea></p> *@
-@*                                                 <p><input type="submit" value="Submit"></p> *@
-@*                                             </div> *@
-@*                                         </div> *@
-@*                                     </div> *@
-@*                                 </div> *@
-@*                             </div> *@
-@*                         </div> *@
-@*                     </div> *@
-@*                     @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Related-Products.cshtml") *@
-@*                 </div> *@
-@*             </div> *@
-@*         </div> *@
-@*     </div> *@
-@* </div> *@
+            @* Container chính để chèn HTML chi tiết sản phẩm *@
+            <div class="col-md-8" id="product-detail-container">
+                <div class="product-content-right">
+                    @* Breadcrumb sẽ được chèn bằng JS *@
+                    <div class="product-breadcroumb" id="detail-breadcrumb">
+                        <span id="breadcrumb-home-placeholder"></span>
+                        <span id="breadcrumb-category-placeholder"></span>
+                        <span id="breadcrumb-product-name-placeholder"></span>
+                    </div>
+
+                    @* Dữ liệu chi tiết sản phẩm sẽ được chèn vào đây *@
+                    <div id="single-product-content">
+                    </div>
+
+                    @await Html.PartialAsync("~/Views/Shared/Partials/User/Product/_Related-Products.cshtml")
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section js {
+    <script>
+        $(document).ready(function () {
+            if (typeof jQuery == 'undefined') {
+                return;
+            }
+
+            // LẤY ID SẢN PHẨM TỪ URL (Giả sử Controller đã lấy ID và truyền vào ViewBag/Data Attribute)
+            // Nếu bạn đang dùng ASP.NET Core MVC, cách tốt nhất là truyền ID vào đây
+            // Giả định bạn có một biến JS chứa Product ID, ví dụ:
+            const currentProductId = parseInt('@(ViewContext.RouteData.Values["id"]?.ToString())') || null;
+
+            if (!currentProductId || currentProductId === 'null') {
+                // Nếu ID không lấy được (có thể do lỗi định tuyến hoặc ID bị thiếu)
+                console.log("Không tìm thấy Product ID trong Route Data!");
+                $('#single-product-content').html('<h2>Sản phẩm không tồn tại hoặc ID không hợp lệ.</h2>');
+                return;
+            }
+
+            // Hàm định dạng tiền tệ giống bên Index.cshtml
+            const formatCurrency = (amount) => {
+                const formatter = new Intl.NumberFormat('vi-VN', {
+                    style: 'currency',
+                    currency: 'VND',
+                    minimumFractionDigits: 0
+                });
+                return formatter.format(amount).replace("₫", " VNĐ");
+            };
+
+            // Hàm tạo HTML cho chi tiết sản phẩm
+            const renderProductDetail = (p) => {
+                // Tính toán giá (camelCase: price, discount)
+                let finalPrice = p.price * (1 - p.discount);
+                let finalPriceFormatted = formatCurrency(finalPrice);
+                let priceFormatted = formatCurrency(p.price);
+
+                let priceHtml = '';
+                if (p.discount > 0) {
+                    priceHtml = `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`;
+                } else {
+                    priceHtml = `<ins>${priceFormatted}</ins>`;
+                }
+
+                // Giả định: Category Name cần phải được lấy từ API khác hoặc Model Product cần có Category Name
+                // Tạm dùng placeholder. Nếu bạn có Category Name trong Model Product, dùng p.categoryName
+                const categoryName = "Electronics";
+
+                // Dùng lại JS đã sửa ở bước 1, nhưng thêm dấu / vào HTML Breadcrumb:
+                $('#breadcrumb-home-placeholder').html(`<a href="/">Home</a>`);
+                $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${categoryName}</a>`);
+                $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="#">${p.productName}</a>`);
+
+                return `
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <div class="product-images">
+                                <div class="product-main-img">
+                                    <img src="/img/${p.image}" alt="${p.productName}">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="product-inner">
+                                <h2 class="product-name">${p.productName}</h2>
+                                <div class="product-inner-price">
+                                    ${priceHtml}
+                                </div>
+                                <form action="/cart/add/${p.id}" class="cart">
+                                    <div class="quantity">
+                                        <input type="number" size="4" class="input-text qty text" title="Qty" value="1" name="quantity" min="1" step="1">
+                                    </div>
+                                    <button class="add_to_cart_button" type="submit">Add to cart</button>
+                                </form>
+                                <div class="product-inner-category">
+                                    <p>
+                                        Category: <a href="#">${categoryName}</a>
+                                    </p>
+                                </div>
+                                <div role="tabpanel">
+                                    <ul class="product-tab" role="tablist">
+                                        <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Description</a></li>
+                                        <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a></li>
+                                    </ul>
+                                    <div class="tab-content">
+                                        <div role="tabpanel" class="tab-pane fade in active" id="home">
+                                            <h2>Product Description</h2>
+                                            <p>${p.description}</p>
+                                        </div>
+                                        <div role="tabpanel" class="tab-pane fade" id="profile">
+                                            <h2>Reviews</h2>
+                                            <div class="submit-review">
+                                                <p><label for="name">Name</label> <input name="name" type="text"></p>
+                                                <p><label for="email">Email</label> <input name="email" type="email"></p>
+                                                <div class="rating-chooser">
+                                                    <p>Your rating</p>
+                                                    <div class="rating-wrap-post">
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                        <i class="fa fa-star"></i>
+                                                    </div>
+                                                </div>
+                                                <p><label for="review">Your review</label> <textarea name="review" id="" cols="30" rows="10"></textarea></p>
+                                                <p><input type="submit" value="Submit"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            };
+
+            // Hàm gọi API và Binding dữ liệu
+            const loadProductDetail = (productId) => {
+                $.ajax({
+                    url: `/API/API/${productId}`,
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (product) {
+                        if (product) {
+                            // Render HTML và chèn vào thẻ placeholder
+                            const html = renderProductDetail(product);
+                            $('#single-product-content').html(html);
+                        } else {
+                            $('#single-product-content').html('<h2>Sản phẩm không tồn tại.</h2>');
+                        }
+                    },
+                    error: function (jqXHR, textStatus, errorThrown) {
+                        console.log("Lỗi khi tải chi tiết sản phẩm: ", textStatus, errorThrown);
+                        $('#single-product-content').html('<h2>Có lỗi xảy ra khi tải dữ liệu.</h2>');
+                    }
+                });
+            };
+
+            // Bắt đầu tải chi tiết sản phẩm
+            loadProductDetail(currentProductId);
+        });
+    </script>
+}
