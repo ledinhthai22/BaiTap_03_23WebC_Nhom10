@@ -111,7 +111,7 @@
                                 <div class="product-inner-price">
                                     ${priceHtml}
                                 </div>
-                                <form action="/cart/add/${p.id}" class="cart">
+                                <form action="#" class="cart">
                                     <div class="quantity">
                                         <input type="number" size="4" class="input-text qty text" title="Qty" value="1" name="quantity" min="1" step="1">
                                     </div>
@@ -161,7 +161,7 @@
 
             const loadProductDetail = (productId) => {
                 $.ajax({
-                    url: `/API/API/${productId}`,
+                    url: `/api/products/${productId}`,
                     type: 'GET',
                     dataType: 'json',
                     success: function (product) {
@@ -209,7 +209,7 @@
 
             const loadSidebarProducts = () => {
                 $.ajax({
-                    url: '@Url.Content("~/API/API/GetProducts")',
+                    url: '@Url.Content("~/api/products")',
                     method: 'GET',
                     dataType: 'json',
                     success: function (products) {
@@ -240,7 +240,7 @@
 
             const loadRecentPosts = () => {
                 $.ajax({
-                    url: '@Url.Content("~/API/API/GetProducts")',
+                    url: '@Url.Content("~/api/products")',
                     method: 'GET',
                     dataType: 'json',
                     success: function (items) {
@@ -291,7 +291,7 @@
                 const $carousel = $('#related-products-container');
 
                 $.ajax({
-                    url: '@Url.Content("~/API/API/GetProducts")',
+                    url: '@Url.Content("~/api/products")',
                     method: 'GET',
                     dataType: 'json',
                     success: function (products) {

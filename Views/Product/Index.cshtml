@@ -29,7 +29,6 @@
                 const discountedPrice = p.price * (1 - p.discount);
                 const formattedDiscountedPrice = formatCurrency(discountedPrice);
                 const formattedOriginalPrice = formatCurrency(p.price);
-                const detail = `@Url.Action("Detail", "Product")/${p.id}`;
 
                 return `
                     <div class="col-md-3 col-sm-6" style="height:450px">
@@ -38,7 +37,7 @@
                                 <img src="img/${p.image}" alt=""> 
                             </div>
                             <h2 class="text-center" style="font-size:16px; height:48px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                                <a href="${detail}">${p.productName}</a>
+                                <a href="/product/detail/${p.id}">${p.productName}</a>
                             </h2>
                             <div class="product-carousel-price text-center"> 
                                 <ins>${formattedDiscountedPrice}</ins> <del>${formattedOriginalPrice}</del> 
@@ -94,7 +93,7 @@
             });
 
             $.ajax({
-                url: '@Url.Action("GetProducts", "API", new { area = "API" })',
+                url: '@Url.Content("~/api/products")',
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {

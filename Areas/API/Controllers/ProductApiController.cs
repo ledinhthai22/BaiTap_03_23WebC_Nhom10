@@ -29,7 +29,7 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                 QUALITY, CATEGORY_ID, TAG_ID, VIEWS, SELLED, STATUS, 
                 CREATE_AT, UPDATE_AT 
             FROM dbo.PRODUCTS 
-            ORDER BY CREATE_AT DESC";
+            WHERE STATUS = 1";
 
             try
             {
@@ -97,7 +97,6 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                 if (dt.Rows.Count > 0)
                 {
                     DataRow row = dt.Rows[0];
-                    // Ánh xạ DataRow đầu tiên sang Model Product
                     product = new Product
                     {
                         id = Convert.ToInt32(row["ID"]),
