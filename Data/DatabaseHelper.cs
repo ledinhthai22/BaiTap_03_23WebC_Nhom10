@@ -35,5 +35,19 @@ namespace BaiTap_03_23WebC_Nhom10.Service
                 }
             }
         }
+        public int ExecuteNonQuery(string query, SqlParameter[] parameters = null)
+        {
+            using (var connection = GetConnection())
+            using (var command = new SqlCommand(query, connection))
+            {
+                if (parameters != null)
+                    command.Parameters.AddRange(parameters);
+
+                connection.Open(); // nhớ mở kết nối trước khi thực thi
+                int rowsAffected = command.ExecuteNonQuery(); // thực thi lệnh
+                return rowsAffected;
+            }
+        }
+
     }
 }

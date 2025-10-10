@@ -3,17 +3,11 @@
 namespace BaiTap_03_23WebC_Nhom10.Areas.Admin.Controllers
 {
     [Area("Admin")]
-    [Route("Admin/[Controller]")]
-    public class CategoryController : Controller
+    [Route("Admin/[controller]")]
+    public class TagController : Controller
     {
-        
+        [HttpGet("")]
         public IActionResult Index()
-        {
-            return View();
-        }
-
-        [HttpGet("Them-danh-muc")]
-        public IActionResult Create()
         {
             return View();
         }

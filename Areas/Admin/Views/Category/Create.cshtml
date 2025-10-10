@@ -1,9 +1,74 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-@{
-	Layout = "_Layout";
+﻿@{
+    Layout = "_Layout";
 }
+
 @section Title {
-	Thêm thể loại
+        Thêm thể loại
+}
+
+<div class="card-body">
+    <form id="frmAddCategory">
+        <div class="row g-3">
+            <div class="col-12">
+                <!-- Tên thể loại -->
+                <label class="form-label fw-bold">Tên thể loại</label>
+                <input type="text" id="CATEGORY_NAME" class="form-control" placeholder="Nhập tên thể loại" required>
+                <br />  
+                <!-- Nút hành động -->
+                <div class="text-center mt-4 d-flex justify-content-center gap-2">
+                    <button type="button" id="btnAdd" class="btn btn-outline-primary">
+                        <i class="bi bi-save"></i> Lưu thể loại
+                    </button>
+                    <button type="button" id="btnBack" class="btn btn-outline-secondary">
+                        <i class="bi bi-arrow-left"></i> Quay lại
+                    </button>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section js {
+    <script>
+        $(document).ready(function () {
+            // Handle form submission
+            $('#btnAdd').click(function () {
+                const name = $('#CATEGORY_NAME').val().trim();
+
+                // Client-side validation
+                if (!name) {
+                    alert('Vui lòng nhập tên thể loại!');
+                    return;
+                }
+                if (name.length > 100) {
+                    alert('Tên thể loại không được vượt quá 100 ký tự!');
+                    return;
+                }
+                if (/\d/.test(name)) {
+                    alert('Tên thể loại không được chứa số!');
+                    return;
+                }
+
+                $.ajax({
+                    url: '/api/categories',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ categoryName: name, status: true }),
+                    success: function (response) {
+                        alert('Thêm thể loại thành công!');
+                        window.location.href = '@Url.Action("Index", "Category")';
+                    },
+                    error: function (xhr) {
+                        const errorMsg = xhr.responseJSON?.message || 'Lỗi khi thêm thể loại!';
+                        alert(errorMsg);
+                    }
+                });
+            });
+
+            // Back to category list
+            $('#btnBack').click(function () {
+                window.location.href = '@Url.Action("Index", "Category")';
+            });
+        });
+    </script>
 }

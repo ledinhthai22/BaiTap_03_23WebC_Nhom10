@@ -3,21 +3,21 @@
 }
 
 @section Title {
-        Danh sách sản phẩm
+        Danh sách tag
 }
 
 <div class="row mb-3 align-items-center">
     <div class="col-md-6 text-end">
-        <a asp-area="Admin" asp-controller="Products" asp-action="Create" class="btn btn-success">
-            <i class="bi bi-plus-circle me-1"></i> Thêm sản phẩm
+        <a asp-area="Admin" asp-controller="Tag" asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Thêm tag
         </a>
     </div>
 </div>
 
 <br />
 
-<div id="productList">
-    <!-- Bảng sản phẩm sẽ load ở đây -->
+<div id="tagList">
+    <!-- Danh sách tag sẽ load ở đây -->
 </div>
 
 <nav aria-label="Page navigation">
@@ -30,23 +30,23 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            const pageSize = 5; // Số sản phẩm mỗi trang
+            const pageSize = 5; // Số tag mỗi trang
             let currentPage = 1;
-            let productsData = []; // Lưu tất cả sản phẩm
+            let tagsData = []; // Lưu tất cả tag
 
             // 1. Lấy dữ liệu từ API
             $.ajax({
-                url: '/api/products',
+                url: '/api/tags',
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
-                    productsData = data;
+                    tagsData = data;
                     renderTable(currentPage);
                     renderPagination();
                 },
                 error: function (err) {
                     console.error(err);
-                    $('#productList').html('<p class="text-danger">Không tải được dữ liệu</p>');
+                    $('#tagList').html('<p class="text-danger">Không tải được dữ liệu</p>');
                 }
             });
 
@@ -54,34 +54,30 @@
             function renderTable(page) {
                 let start = (page - 1) * pageSize;
                 let end = start + pageSize;
-                let pageData = productsData.slice(start, end);
+                let pageData = tagsData.slice(start, end);
 
                 let html = '<table class="table table-bordered table-striped">';
-                html += '<thead><tr><th>ID</th><th>Tên</th><th>Giá</th><th>Discount</th><th>Ảnh</th><th>Category</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+                html += '<thead><tr><th>ID</th><th>Tên tag</th><th>Action</th></tr></thead><tbody>';
 
-                pageData.forEach(p => {
+                pageData.forEach(t => {
+                   
                     html += `<tr>
-                        <td>${p.id}</td>
-                        <td>${p.productName}</td>
-                        <td>${p.price}</td>
-                        <td>${p.discount}</td>
-                        <td><img src="${p.image}" width="50" height="50"/></td>
-                        <td>${p.categoryID}</td>
-                        <td>${p.status ? 'Hoạt động' : 'Không hoạt động'}</td>
+                        <td>${t.id}</td>
+                        <td>${t.tagName}</td>
                         <td>
-                            <a href="/Admin/Products/Edit/${p.id}" class="btn btn-sm btn-primary">Sửa</a>
-                            <a href="/Admin/Products/Delete/${p.id}" class="btn btn-sm btn-danger">Xóa</a>
+                            <a href="/Admin/Tag/Edit/${t.id}" class="btn btn-sm btn-primary">Sửa</a>
+                            <a href="/Admin/Tag/Delete/${t.id}" class="btn btn-sm btn-danger">Xóa</a>
                         </td>
                     </tr>`;
                 });
 
                 html += '</tbody></table>';
-                $('#productList').html(html);
+                $('#tagList').html(html);
             }
 
             // 3. Render phân trang
             function renderPagination() {
-                const totalPages = Math.ceil(productsData.length / pageSize);
+                const totalPages = Math.ceil(tagsData.length / pageSize);
                 let html = '';
 
                 for (let i = 1; i <= totalPages; i++) {
