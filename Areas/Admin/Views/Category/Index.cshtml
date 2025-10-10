@@ -1,55 +1,102 @@
 ﻿@{
-	Layout = "_Layout";
+    Layout = "_Layout";
 }
+
 @section Title {
-	Danh sach the loai
+        Danh sách thể loại
 }
-<div class="text-end mb-3">
-    <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn btn-success">
-        <i class="bi bi-plus-circle me-1"></i> Thêm thể loại
-    </a>
+
+<div class="row mb-3 align-items-center">
+    <div class="col-md-6 text-end">
+        <a asp-area="Admin" asp-controller="Category" asp-action="Create" class="btn btn-success">
+            <i class="bi bi-plus-circle me-1"></i> Thêm thể loại
+        </a>
+    </div>
 </div>
+
 <br />
+
 <div id="categoryList">
     <!-- Danh sách thể loại sẽ load ở đây -->
 </div>
+
+<nav aria-label="Page navigation">
+    <ul class="pagination justify-content-center" id="pagination">
+        <!-- Nút phân trang sẽ load ở đây -->
+    </ul>
+</nav>
+
 @section js {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
-        $(document).ready(function() {
-            loadCategories();
+        $(document).ready(function () {
+            const pageSize = 5; // Số thể loại mỗi trang
+            let currentPage = 1;
+            let categoriesData = []; // Lưu tất cả thể loại
 
-            function loadCategories() {
-                $.ajax({
-                    url: '/API/API/categories', // URL API
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function(data) {
-                        let html = '<table class="table table-bordered">';
-                        html += '<thead><tr><th>ID</th><th>Tên thể loại</th><th>Action</th></tr></thead><tbody>';
+            // 1. Lấy dữ liệu từ API
+            $.ajax({
+                url: '/api/categories',
+                type: 'GET',
+                dataType: 'json',
+                success: function (data) {
+                    categoriesData = data;
+                    renderTable(currentPage);
+                    renderPagination();
+                },
+                error: function (err) {
+                    console.error(err);
+                    $('#categoryList').html('<p class="text-danger">Không tải được dữ liệu</p>');
+                }
+            });
 
-                        $.each(data, function(index, category) {
-                            html += `<tr>
-                                <td>${category.id}</td>
-                                <td>${category.categoryName}</td>
-                                <td>
-                                    <a href="/Admin/Category/Edit/${category.id}" class="btn btn-sm btn-primary">Sửa</a>
-                                    <a href="/Admin/Category/Delete/${category.id}" class="btn btn-sm btn-danger">Xóa</a>
-                                </td>
-                            </tr>`;
-                        });
+            // 2. Render bảng theo trang
+            function renderTable(page) {
+                let start = (page - 1) * pageSize;
+                let end = start + pageSize;
+                let pageData = categoriesData.slice(start, end);
 
-                        html += '</tbody></table>';
-                        $('#categoryList').html(html);
-                    },
-                    error: function(err) {
-                        console.error(err);
-                        $('#categoryList').html('<p class="text-danger">Không tải được dữ liệu</p>');
-                    }
+                let html = '<table class="table table-bordered table-striped">';
+                html += '<thead><tr><th>ID</th><th>Tên thể loại</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+
+                pageData.forEach(c => {
+                    const statusText = (c.status === true || c.status === 1) ? 'Hoạt động' : 'Không hoạt động';
+                    html += `<tr>
+                        <td>${c.id}</td>
+                        <td>${c.categoryName}</td>
+                        <td>${statusText}</td>
+                        <td>
+                            <a href="/Admin/Category/Edit/${c.id}" class="btn btn-sm btn-primary">Sửa</a>
+                            <a href="/Admin/Category/Delete/${c.id}" class="btn btn-sm btn-danger">Xóa</a>
+                        </td>
+                    </tr>`;
+                });
+
+                html += '</tbody></table>';
+                $('#categoryList').html(html);
+            }
+
+            // 3. Render phân trang
+            function renderPagination() {
+                const totalPages = Math.ceil(categoriesData.length / pageSize);
+                let html = '';
+
+                for (let i = 1; i <= totalPages; i++) {
+                    html += `<li class="page-item ${i === currentPage ? 'active' : ''}">
+                                <a class="page-link" href="#">${i}</a>
+                            </li>`;
+                }
+
+                $('#pagination').html(html);
+
+                // Click vào trang
+                $('#pagination .page-link').click(function (e) {
+                    e.preventDefault();
+                    currentPage = parseInt($(this).text());
+                    renderTable(currentPage);
+                    renderPagination();
                 });
             }
         });
     </script>
 }
-
-
-

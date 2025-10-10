@@ -1,25 +1,26 @@
-﻿using System.Data;
+﻿using Microsoft.AspNetCore.Mvc;
 using BaiTap_03_23WebC_Nhom10.Models;
 using BaiTap_03_23WebC_Nhom10.Service;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.Data.SqlClient;
+using System.Data;
 
-namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
+namespace BaiTap_03_23WebC_Nhom10.Controllers.API
 {
-    [Area("api")]
-    [Route("[area]/[controller]")]
-    public class APIController : Controller
+    [Route("api/products")]
+    [ApiController]
+    public class ProductApiController : ControllerBase
     {
-        private readonly DatabaseHelper _dbHelper;
-
-        public APIController(DatabaseHelper dbHelper)
+        private readonly DatabaseHelper _db;
+        private readonly IWebHostEnvironment _env;
+        public ProductApiController(DatabaseHelper db, IWebHostEnvironment env)
         {
-            _dbHelper = dbHelper;
+            _db = db;
+            _env = env;
         }
 
 
-        [HttpGet("GetProducts")]
-        public IActionResult GetProducts()
+        [HttpGet]
+        public IActionResult GetAll()
         {
             List<Product> products = new List<Product>();
             string query = @"
@@ -32,7 +33,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
 
             try
             {
-                DataTable dt = _dbHelper.ExecuteQuery(query);
+                DataTable dt = _db.ExecuteQuery(query);
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -54,7 +55,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
                         updateAT = row["UPDATE_AT"] == DBNull.Value ? (DateTime?)null : Convert.ToDateTime(row["UPDATE_AT"])
                     });
                 }
-                return Json(products);
+                return Ok(products);
             }
             catch (Exception ex)
             {
@@ -66,7 +67,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
             }
         }
 
-        [HttpGet("{id}")]
+        [HttpGet("{id:int}")]
         public IActionResult GetProductById(int id)
         {
             Product? product = null;
@@ -91,7 +92,7 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
                     new Microsoft.Data.SqlClient.SqlParameter("@id", System.Data.SqlDbType.Int) { Value = id }
                 };
 
-                DataTable dt = _dbHelper.ExecuteQuery(query, parameters);
+                DataTable dt = _db.ExecuteQuery(query, parameters);
 
                 if (dt.Rows.Count > 0)
                 {
@@ -121,36 +122,76 @@ namespace BaiTap_03_23WebC_Nhom10.Areas.API.Controllers
                 Console.WriteLine("Lỗi khi truy vấn cơ sở dữ liệu: " + ex.Message);
                 return StatusCode(500, new { error = "Internal server error." });
             }
-            return Json(product);
+            return Ok(product);
         }
-        [HttpGet("categories")]
-        public IActionResult getCategory()
+        [HttpPost]
+        public IActionResult Create([FromForm] Product product, IFormFile? ImageFiles) // Sử dụng ImageFiles cho file upload
         {
-            List<Category> categories = new List<Category>();
-            string query = @"SELECT ID, CATEGORY_NAME, STATUS FROM dbo.CATEGORY";
+            if (product == null || string.IsNullOrWhiteSpace(product.productName))
+                return BadRequest(new { message = "Tên sản phẩm không được để trống." });
+
             try
             {
-                DataTable dt = _dbHelper.ExecuteQuery(query);
-                foreach (DataRow row in dt.Rows)
+                string imagePath = null;
+
+                // 1. Xử lý lưu ảnh (nếu có)
+                if (ImageFiles != null && ImageFiles.Length > 0)
                 {
-                    categories.Add(new Category
+                    // Đảm bảo thư mục wwwroot/uploads tồn tại
+                    string uploadPath = Path.Combine(_env.WebRootPath, "wwwroot","img");
+                    if (!Directory.Exists(uploadPath)) Directory.CreateDirectory(uploadPath);
+
+                    // Tạo tên file duy nhất
+                    string fileName = Guid.NewGuid().ToString("N") + Path.GetExtension(ImageFiles.FileName);
+                    string fullPath = Path.Combine(uploadPath, fileName);
+
+                    // Lưu file vào thư mục
+                    using (var stream = new FileStream(fullPath, FileMode.Create))
                     {
-                        id = Convert.ToInt32(row["ID"]),
-                        categoryName = row["CATEGORY_NAME"].ToString(),
-                        status = row["STATUS"] == DBNull.Value ? (bool?)null : (Convert.ToInt32(row["STATUS"]) == 1)
-                    });
+                        ImageFiles.CopyTo(stream);
+                    }
+
+                    // Lưu đường dẫn tương đối vào database
+                    imagePath = "/uploads/" + fileName;
+                    product.image = imagePath;
                 }
+
+                // 2. Chèn dữ liệu sản phẩm vào DB
+                // Dùng OUTPUT INSERTED.ID để lấy ID mới được tạo
+                string query = @"
+                INSERT INTO PRODUCTS
+                (PRODUCT_NAME, PRICE, DISCOUNT, IMAGE, DESCRIPTION, QUALITY, CATEGORY_ID, TAG_ID, STATUS, CREATE_AT)
+                OUTPUT INSERTED.ID
+                VALUES (@name, @price, @discount, @image, @desc, @quality, @category, @tag, 1, GETDATE())";
+
+                var parameters = new SqlParameter[]
+                {
+                    new SqlParameter("@name", product.productName ?? (object)DBNull.Value),
+                    new SqlParameter("@price", product.price),
+                    new SqlParameter("@discount", product.discount),
+                    new SqlParameter("@image", product.image ?? (object)DBNull.Value),
+                    new SqlParameter("@desc", product.description ?? (object)DBNull.Value),
+                    new SqlParameter("@quality", product.quality ?? (object)DBNull.Value),
+                    new SqlParameter("@category", product.categoryID),
+                    new SqlParameter("@tag", product.tagID),
+                };
+
+                // ExecuteScalar trả về ID mới (vì có OUTPUT INSERTED.ID)
+                object newIdObj = _db.ExecuteNonQuery(query, parameters);
+                int newId = Convert.ToInt32(newIdObj);
+                product.id = newId;
+
+                // Trả về sản phẩm đã tạo thành công
+                return Created($"/api/products/{newId}", new { message = "Thêm sản phẩm thành công", product });
             }
             catch (Exception ex)
             {
                 return StatusCode(500, new
                 {
-                    error = "Lỗi khi truy vấn cơ sở dữ liệu.",
+                    error = "Lỗi khi thêm sản phẩm.",
                     detail = ex.Message
                 });
-
             }
-            return Json(categories);
         }
     }
 }
