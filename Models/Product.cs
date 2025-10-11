@@ -34,9 +34,10 @@ namespace BaiTap_03_23WebC_Nhom10.Models
         public int? selled { get; set; }
 
         public bool? status { get; set; }
-
+        public string? categoryName { get; set; }
         public DateTime? createAT { get; set; }
 
         public DateTime? updateAT { get; set; }
+        public List<string>? imageList { get; set; }
     }
 }

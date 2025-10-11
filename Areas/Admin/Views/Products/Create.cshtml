@@ -13,7 +13,8 @@
             <div class="col-12">
                 <!-- Tên sản phẩm -->
                 <label class="form-label fw-bold">Tên sản phẩm</label>
-                <input type="text" id="PRODUCT_NAME" class="form-control" required>
+                <input type="text" id="PRODUCT_NAME" class="form-control"
+                       placeholder="Nhập tên (nhiều tên cách nhau bằng dấu ;)" required>
 
                 <!-- Giá -->
                 <label class="form-label fw-bold mt-3">Giá</label>
@@ -37,25 +38,23 @@
                     <select id="CATEGORY_ID" class="form-select me-3" style="width: 400px;">
                         <option value="">-- Chọn danh mục --</option>
                     </select>
-                    <button type="button" class="btn btn-success flex-shrink-0" id="btnMoreCategory">
-                        Thêm mới
-                    </button>
+                    <button type="button" class="btn btn-success flex-shrink-0" id="btnMoreCategory">Thêm mới</button>
                 </div>
 
-                <!-- Input thêm danh mục, ẩn mặc định -->
+                <!-- Input thêm danh mục -->
                 <div class="d-flex align-items-center mb-3" id="newCategoryContainer" style="display: none;">
                     <input type="text" id="newCategoryName" class="form-control me-2" placeholder="Nhập tên danh mục...">
                     <button type="button" class="btn btn-success" id="btnSaveCategory">Thêm</button>
                 </div>
 
-                <!-- Tag (chỉ cho phép 1 tag) -->
+                <!-- Tag -->
                 <label class="form-label fw-bold mt-3">Tag</label>
-                <input type="text" id="TAG_ID" class="form-control" placeholder="Nhập 1 tag">
+                <input type="text" id="TAG_ID" class="form-control" placeholder="Nhập 1 tag...">
 
-                <!-- Hình ảnh sản phẩm -->
+                <!-- Hình ảnh -->
                 <label class="form-label fw-bold mt-3">Hình ảnh sản phẩm</label>
-                <input type="file" id="IMAGE" class="form-control" accept="image/*">
-                <div id="previewContainer"></div>
+                <input type="file" id="IMAGE" class="form-control" accept="image/*" multiple>
+                <div id="previewContainer" class="mt-2"></div>
             </div>
         </div>
 
@@ -76,126 +75,77 @@
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
 
     <script>
-        $(document).ready(function () {
+        $(function () {
+            loadCategories();
+            loadTags();
 
-            // === 1) Load categories ===
+            // ======= Load Categories =======
             function loadCategories() {
-                $.ajax({
-                    url: '/api/categories',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (res) {
-                        const select = $('#CATEGORY_ID');
-                        select.empty();
-                        select.append('<option value="">-- Chọn danh mục --</option>');
-                        res.forEach(cat => {
-                            const id = cat.id ?? cat.ID ?? 0;
-                            const name = cat.categoryName ?? cat.name ?? cat.CATEGORY_NAME ?? '';
-                            select.append(`<option value="${id}">${name}</option>`);
-                        });
-                    },
-                    error: function () {
-                        alert("❌ Không thể tải danh mục!");
-                    }
+                $.getJSON('/api/categories', res => {
+                    const select = $('#CATEGORY_ID');
+                    select.empty().append('<option value="">-- Chọn danh mục --</option>');
+                    res.forEach(cat => select.append(`<option value="${cat.id}">${cat.categoryName}</option>`));
                 });
             }
 
-            // === 2) Load tags ===
-            let availableTags = [];
             function loadTags() {
-                $.ajax({
-                    url: '/api/tags',
-                    type: 'GET',
-                    dataType: 'json',
-                    success: function (res) {
-                        availableTags = res.map(t => t.tagName ?? t.name ?? t.TAG_NAME ?? '');
-                        $("#TAG_ID").autocomplete({
-                            source: availableTags,
-                            minLength: 1
-                        });
-                    }
+                $.getJSON('/api/tags', res => {
+                    const tags = res.map(t => t.tagName ?? t.name ?? t.TAG_NAME ?? '');
+                    $("#TAG_ID").autocomplete({
+                        source: tags,
+                        minLength: 1,
+                        appendTo: "body"
+                    });
                 });
             }
 
-            // === 3) Toggle hiển thị thêm danh mục ===
-            $('#btnMoreCategory').on('click', function () {
-                $('#newCategoryContainer').toggle();
-            });
+            $('#btnMoreCategory').click(() => $('#newCategoryContainer').toggle());
 
-            // === 4) Lưu danh mục mới ===
-            $('#btnSaveCategory').on('click', function () {
+            $('#btnSaveCategory').click(() => {
                 const name = $('#newCategoryName').val().trim();
-                if (!name) { alert('Vui lòng nhập tên danh mục!'); return; }
-
+                if (!name) return alert('Vui lòng nhập tên danh mục!');
                 $.ajax({
                     url: '/api/categories',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ categoryName: name, status: true }),
-                    success: function (cat) {
-                        const id = cat.id ?? cat.ID ?? 0;
-                        $('#CATEGORY_ID').append(`<option value="${id}" selected>${name}</option>`);
+                    success: cat => {
+                        $('#CATEGORY_ID').append(`<option value="${cat.id}" selected>${name}</option>`);
                         $('#newCategoryName').val('');
                         $('#newCategoryContainer').hide();
-                        alert('✅ Thêm danh mục thành công!');
-                    },
-                    error: function () {
-                        alert('❌ Lỗi khi thêm danh mục!');
                     }
                 });
             });
 
-            // === 5) Xem trước ảnh ===
             $('#IMAGE').on('change', function (e) {
                 const files = e.target.files;
-                const container = $('#previewContainer');
-                container.empty();
-
-                if (!files || files.length === 0) {
-                    container.append('<p class="text-muted">Chưa chọn ảnh...</p>');
-                    return;
-                }
-
-                Array.from(files).forEach((file, i) => {
-                    if (!file.type.startsWith('image/')) return;
+                const container = $('#previewContainer').empty();
+                Array.from(files).forEach(file => {
                     const url = URL.createObjectURL(file);
-                    const html = `
-                        <div class="preview-item d-inline-block position-relative m-2">
-                            <img src="${url}" style="height:100px;width:auto;border-radius:5px;">
-                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0">×</button>
-                        </div>`;
-                    const $wrap = $(html);
-                    $wrap.find('button').on('click', () => $wrap.remove());
-                    container.append($wrap);
+                    const item = $(`
+                        <div class="d-inline-block position-relative m-2">
+                            <img src="${url}" class="preview-img">
+                        </div>
+                    `);
+                    container.append(item);
                 });
             });
 
-            // === 6) Submit sản phẩm ===
-            $('#btnAdd').on('click', function () {
-                const productNames = $('#PRODUCT_NAME').val().trim();
-                const price = $('#PRICE').val();
-
-                if (!productNames) {
-                    alert('Vui lòng nhập tên sản phẩm (có thể nhập nhiều, cách nhau bằng dấu ;)');
-                    return;
-                }
-                if (!price) {
-                    alert('Vui lòng nhập giá sản phẩm!');
-                    return;
-                }
-
+            $('#btnAdd').click(() => {
                 const formData = new FormData();
-                formData.append('productName', productNames);
-                formData.append('price', price);
+                formData.append('productName', $('#PRODUCT_NAME').val());
+                formData.append('price', $('#PRICE').val());
                 formData.append('quality', $('#QUALITY').val() || 0);
                 formData.append('discount', $('#DISCOUNT').val() || 0);
-                formData.append('description', $('#DESCRIPTION').val() || '');
+                formData.append('description', $('#DESCRIPTION').val());
                 formData.append('categoryID', $('#CATEGORY_ID').val() || 0);
-                formData.append('tagID', $('#TAG_ID').val().trim() || '');
+                formData.append('tagID', $('#TAG_ID').val().trim());
 
                 const files = $('#IMAGE')[0].files;
                 if (files && files.length > 0) {
-                    formData.append('imageFile', files[0]);
+                    Array.from(files).forEach((file, i) => {
+                        formData.append(`file${i}`, file);
+                    });
                 }
 
                 $.ajax({
@@ -204,26 +154,19 @@
                     data: formData,
                     processData: false,
                     contentType: false,
-                    success: function (res) {
-                        alert(res.message || '✅ Thêm sản phẩm thành công!');
+                    success: res => {
+                        alert(res.message || 'Thêm sản phẩm thành công!');
                         window.location.href = '@Url.Action("Index", "Products", new { area = "Admin" })';
                     },
-                    error: function (xhr) {
-                        const msg = xhr.responseJSON?.error || xhr.responseJSON?.message || '❌ Lỗi khi thêm sản phẩm!';
-                        alert(msg);
-                        console.error(xhr);
+                    error: xhr => {
+                        alert(xhr.responseJSON?.error ||  'Lỗi khi thêm sản phẩm!');
                     }
                 });
             });
 
-            // === 7) Nút quay lại ===
-            $('#btnBack').on('click', function () {
+            $('#btnBack').click(() => {
                 window.location.href = '@Url.Action("Index", "Products", new { area = "Admin" })';
             });
-
-            // --- Load khi mở trang ---
-            loadCategories();
-            loadTags();
         });
     </script>
 }

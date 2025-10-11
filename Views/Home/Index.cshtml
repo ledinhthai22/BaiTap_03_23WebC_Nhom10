@@ -9,7 +9,7 @@
 }
 
 @section title {
-    eElectronics - HTML eCommerce Template
+        eElectronics - HTML eCommerce Template
 }
 @section css {
 
@@ -46,11 +46,17 @@
                     price = `<ins>${priceFormatted}</ins>`;
                 }
 
+                // Tách chuỗi image và lấy ảnh đầu tiên
+                let mainImage = "/img/no-image.jpg";
+                if (typeof p.image === "string" && p.image.trim() !== "") {
+                    const images = p.image.split(";").map(x => x.trim());
+                    mainImage = images.length > 0 ? `/img/${images[0]}` : mainImage;
+                }
 
                 return `
                     <div class="single-product">
                         <div class="product-f-image">
-                            <img src="/img/${p.image}" alt="">
+                            <img src="${mainImage}" alt="">
                             <div class="product-hover">
                                 <a href="#" class="add-to-cart-link"><i class="fa fa-shopping-cart"></i> Add to cart</a>
                                 <a href="/product/detail/${p.id}" class="view-details-link"><i class="fa fa-link"></i> See details</a>
@@ -79,9 +85,16 @@
                     price = `<ins>${priceFormatted}</ins>`;
                 }
 
+                // Tách chuỗi image và lấy ảnh đầu tiên
+                let mainImage = "/img/no-image.jpg";
+                if (typeof p.image === "string" && p.image.trim() !== "") {
+                    const images = p.image.split(";").map(x => x.trim());
+                    mainImage = images.length > 0 ? `/img/${images[0]}` : mainImage;
+                }
+
                 return `
                     <div class="single-wid-product">
-                        <a href="/product/detail/${p.id}"><img src="/img/${p.image}" alt="" class="product-thumb"></a>
+                        <a href="/product/detail/${p.id}"><img src="${mainImage}" alt="" class="product-thumb"></a>
                         <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-wid-rating">
                             <i class="fa fa-star"></i>
@@ -149,7 +162,7 @@
                 },
                 error: function (xhr, status, error) {
                     console.error("LỖI KHI TẢI SẢN PHẨM:", status, error);
-                }   
+                }
             });
         });
     </script>
