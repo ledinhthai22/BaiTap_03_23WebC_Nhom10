@@ -8,13 +8,13 @@ namespace BaiTap_03_23WebC_Nhom10
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
-
+            builder.Services.AddSession();//Đăng ký session
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<DatabaseHelper>();
             builder.Services.AddScoped<ProductService>(provider =>
             {
                 var env = provider.GetRequiredService<IWebHostEnvironment>();
-                string dbPath = Path.Combine(env.WebRootPath,"data" ,"db.json");
+                string dbPath = Path.Combine(env.WebRootPath, "data", "db.json");
                 return new ProductService(dbPath);
             });
             builder.Services.AddScoped<DatabaseHelper>();
@@ -24,13 +24,13 @@ namespace BaiTap_03_23WebC_Nhom10
             if (!app.Environment.IsDevelopment())
             {
                 app.UseExceptionHandler("/Home/Error");
-           
+
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseRouting();
-
+            app.UseSession();//Dùng session
             app.UseAuthorization();
             //app.UseMiddleware<Middleware.ProductMiddleware>();
             app.MapStaticAssets();
