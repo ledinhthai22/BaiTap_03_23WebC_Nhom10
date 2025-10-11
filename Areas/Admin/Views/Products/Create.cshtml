@@ -8,7 +8,6 @@
 }
 
 <div class="card-body">
-    <h4 class="card-title">Thêm sản phẩm mới</h4>
     <form id="frmAddProduct" enctype="multipart/form-data">
         <div class="row g-3">
             <div class="col-12">
@@ -35,11 +34,11 @@
                 <!-- Danh mục -->
                 <label class="form-label fw-bold mt-3">Danh mục</label>
                 <div class="d-flex align-items-center mb-2" id="categoryContainer">
-                    <select id="CATEGORY_ID" class="form-select me-3" style="width: 250px;">
+                    <select id="CATEGORY_ID" class="form-select me-3" style="width: 400px;">
                         <option value="">-- Chọn danh mục --</option>
                     </select>
                     <button type="button" class="btn btn-success flex-shrink-0" id="btnMoreCategory">
-                        More Than
+                        Thêm mới
                     </button>
                 </div>
 
@@ -49,14 +48,14 @@
                     <button type="button" class="btn btn-success" id="btnSaveCategory">Thêm</button>
                 </div>
 
-                <!-- Tag -->
+                <!-- Tag (chỉ cho phép 1 tag) -->
                 <label class="form-label fw-bold mt-3">Tag</label>
-                <input type="text" id="TAG_ID" class="form-control" placeholder="Nhập tag, cách nhau bởi dấu phẩy">
+                <input type="text" id="TAG_ID" class="form-control" placeholder="Nhập 1 tag">
 
                 <!-- Hình ảnh sản phẩm -->
                 <label class="form-label fw-bold mt-3">Hình ảnh sản phẩm</label>
-                <input type="file" id="IMAGE" class="form-control" multiple accept="image/*" onchange="previewImages(event)">
-                <div id="previewContainer" class="d-flex flex-wrap mt-2 gap-2"></div>
+                <input type="file" id="IMAGE" class="form-control" accept="image/*">
+                <div id="previewContainer"></div>
             </div>
         </div>
 
@@ -75,153 +74,156 @@
 @section js {
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.min.js"></script>
-    <link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
     <script>
         $(document).ready(function () {
-            // Load categories
+
+            // === 1) Load categories ===
             function loadCategories() {
                 $.ajax({
                     url: '/api/categories',
                     type: 'GET',
-                    success: function (categories) {
+                    dataType: 'json',
+                    success: function (res) {
                         const select = $('#CATEGORY_ID');
                         select.empty();
                         select.append('<option value="">-- Chọn danh mục --</option>');
-                        categories.forEach(cat => {
-                            select.append(`<option value="${cat.id}">${cat.categoryName}</option>`);
+                        res.forEach(cat => {
+                            const id = cat.id ?? cat.ID ?? 0;
+                            const name = cat.categoryName ?? cat.name ?? cat.CATEGORY_NAME ?? '';
+                            select.append(`<option value="${id}">${name}</option>`);
                         });
                     },
                     error: function () {
-                        alert("Lỗi khi tải danh mục!");
+                        alert("❌ Không thể tải danh mục!");
                     }
                 });
             }
 
-            // Load tags for autocomplete
+            // === 2) Load tags ===
             let availableTags = [];
-            $.ajax({
-                url: '/api/tags',
-                type: 'GET',
-                dataType: 'json',
-                success: function (tags) {
-                    availableTags = tags.map(tag => tag.tagName);
-                    $("#TAG_ID").autocomplete({
-                        source: function (request, response) {
-                            // Get the last term (after the last comma)
-                            const terms = request.term.split(',').map(t => t.trim());
-                            const lastTerm = terms[terms.length - 1];
-                            // Filter tags that match the last term
-                            const matches = availableTags.filter(tag =>
-                                tag.toLowerCase().includes(lastTerm.toLowerCase())
-                            );
-                            response(matches);
-                        },
-                        minLength: 1,
-                        select: function (event, ui) {
-                            // Replace the last term with the selected tag
-                            const terms = this.value.split(',').map(t => t.trim());
-                            terms[terms.length - 1] = ui.item.value;
-                            this.value = terms.join(', ') + ', ';
-                            return false;
-                        },
-                        open: function () {
-                            // Ensure the autocomplete menu is above other elements
-                            $(this).autocomplete('widget').css('z-index', 1000);
-                        }
-                    }).on('keydown', function (event) {
-                        // Handle Tab key to select the highlighted suggestion
-                        if (event.keyCode === 9) { // Tab key
-                            event.preventDefault();
-                            const ui = $(this).autocomplete('instance');
-                            if (ui.menu.active) {
-                                // Select the highlighted item
-                                const selected = ui.menu.active.find('a').text();
-                                const terms = this.value.split(',').map(t => t.trim());
-                                terms[terms.length - 1] = selected;
-                                this.value = terms.join(', ') + ', ';
-                                $(this).autocomplete('close');
-                            }
-                        }
-                    });
-                },
-                error: function (err) {
-                    console.error(err);
-                    alert("Lỗi khi tải danh sách tag!");
-                }
+            function loadTags() {
+                $.ajax({
+                    url: '/api/tags',
+                    type: 'GET',
+                    dataType: 'json',
+                    success: function (res) {
+                        availableTags = res.map(t => t.tagName ?? t.name ?? t.TAG_NAME ?? '');
+                        $("#TAG_ID").autocomplete({
+                            source: availableTags,
+                            minLength: 1
+                        });
+                    }
+                });
+            }
+
+            // === 3) Toggle hiển thị thêm danh mục ===
+            $('#btnMoreCategory').on('click', function () {
+                $('#newCategoryContainer').toggle();
             });
 
-            // Toggle input thêm danh mục
-            $("#btnMoreCategory").click(function () {
-                const container = $("#newCategoryContainer");
-                container.css("display", container.css("display") === "none" ? "flex" : "none");
-            });
-
-            // Thêm danh mục bằng Ajax
-            $("#btnSaveCategory").click(function () {
-                const name = $("#newCategoryName").val().trim();
-                if (!name) {
-                    alert("Vui lòng nhập tên danh mục!");
-                    return;
-                }
-                if (name.length > 100) {
-                    alert("Tên danh mục không được vượt quá 100 ký tự!");
-                    return;
-                }
-                if (/\d/.test(name)) {
-                    alert("Tên danh mục không được chứa số!");
-                    return;
-                }
+            // === 4) Lưu danh mục mới ===
+            $('#btnSaveCategory').on('click', function () {
+                const name = $('#newCategoryName').val().trim();
+                if (!name) { alert('Vui lòng nhập tên danh mục!'); return; }
 
                 $.ajax({
                     url: '/api/categories',
                     type: 'POST',
                     contentType: 'application/json',
                     data: JSON.stringify({ categoryName: name, status: true }),
-                    success: function (newCat) {
-                        $('#CATEGORY_ID').append(`<option value="${newCat.id}">${newCat.categoryName}</option>`);
-                        $('#CATEGORY_ID').val(newCat.id);
-                        $("#newCategoryContainer").css("display", "none");
+                    success: function (cat) {
+                        const id = cat.id ?? cat.ID ?? 0;
+                        $('#CATEGORY_ID').append(`<option value="${id}" selected>${name}</option>`);
                         $('#newCategoryName').val('');
+                        $('#newCategoryContainer').hide();
+                        alert('✅ Thêm danh mục thành công!');
                     },
-                    error: function (xhr) {
-                        const errorMsg = xhr.responseJSON?.message || "Lỗi khi thêm danh mục!";
-                        alert(errorMsg);
+                    error: function () {
+                        alert('❌ Lỗi khi thêm danh mục!');
                     }
                 });
             });
 
-            // Xem trước hình ảnh
-            function previewImages(event) {
-                const container = $("#previewContainer");
+            // === 5) Xem trước ảnh ===
+            $('#IMAGE').on('change', function (e) {
+                const files = e.target.files;
+                const container = $('#previewContainer');
                 container.empty();
-                for (let file of event.target.files) {
-                    const reader = new FileReader();
-                    reader.onload = e => {
-                        const img = $("<img>").attr({
-                            src: e.target.result,
-                            class: "rounded border",
-                            width: "200",
-                            height: "200",
-                            style: "object-fit: cover"
-                        });
-                        container.append(img);
-                    };
-                    reader.readAsDataURL(file);
+
+                if (!files || files.length === 0) {
+                    container.append('<p class="text-muted">Chưa chọn ảnh...</p>');
+                    return;
                 }
-            }
 
-            // Lưu sản phẩm (placeholder)
-            $("#btnAdd").click(function () {
-                alert("Bạn có thể thêm Ajax submit ở đây!");
+                Array.from(files).forEach((file, i) => {
+                    if (!file.type.startsWith('image/')) return;
+                    const url = URL.createObjectURL(file);
+                    const html = `
+                        <div class="preview-item d-inline-block position-relative m-2">
+                            <img src="${url}" style="height:100px;width:auto;border-radius:5px;">
+                            <button type="button" class="btn btn-sm btn-danger position-absolute top-0 end-0">×</button>
+                        </div>`;
+                    const $wrap = $(html);
+                    $wrap.find('button').on('click', () => $wrap.remove());
+                    container.append($wrap);
+                });
             });
 
-            // Quay lại trang danh sách sản phẩm
-            $("#btnBack").click(function () {
-                window.location.href = '@Url.Action("Index", "Products")';
+            // === 6) Submit sản phẩm ===
+            $('#btnAdd').on('click', function () {
+                const productNames = $('#PRODUCT_NAME').val().trim();
+                const price = $('#PRICE').val();
+
+                if (!productNames) {
+                    alert('Vui lòng nhập tên sản phẩm (có thể nhập nhiều, cách nhau bằng dấu ;)');
+                    return;
+                }
+                if (!price) {
+                    alert('Vui lòng nhập giá sản phẩm!');
+                    return;
+                }
+
+                const formData = new FormData();
+                formData.append('productName', productNames);
+                formData.append('price', price);
+                formData.append('quality', $('#QUALITY').val() || 0);
+                formData.append('discount', $('#DISCOUNT').val() || 0);
+                formData.append('description', $('#DESCRIPTION').val() || '');
+                formData.append('categoryID', $('#CATEGORY_ID').val() || 0);
+                formData.append('tagID', $('#TAG_ID').val().trim() || '');
+
+                const files = $('#IMAGE')[0].files;
+                if (files && files.length > 0) {
+                    formData.append('imageFile', files[0]);
+                }
+
+                $.ajax({
+                    url: '/api/products',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (res) {
+                        alert(res.message || '✅ Thêm sản phẩm thành công!');
+                        window.location.href = '@Url.Action("Index", "Products", new { area = "Admin" })';
+                    },
+                    error: function (xhr) {
+                        const msg = xhr.responseJSON?.error || xhr.responseJSON?.message || '❌ Lỗi khi thêm sản phẩm!';
+                        alert(msg);
+                        console.error(xhr);
+                    }
+                });
             });
 
-            // Load categories on page load
+            // === 7) Nút quay lại ===
+            $('#btnBack').on('click', function () {
+                window.location.href = '@Url.Action("Index", "Products", new { area = "Admin" })';
+            });
+
+            // --- Load khi mở trang ---
             loadCategories();
+            loadTags();
         });
     </script>
 }

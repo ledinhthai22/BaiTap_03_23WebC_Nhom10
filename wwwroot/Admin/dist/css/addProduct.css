@@ -1,0 +1,70 @@
+﻿#previewContainer {
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    gap: 10px;
+    padding: 10px 0;
+    white-space: nowrap;
+    scrollbar-width: thin;
+}
+
+#previewContainer .preview-item {
+        position: relative;
+        flex: 0 0 auto;
+        width: 180px;
+        height: 120px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        overflow: hidden;
+}
+
+    #previewContainer img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+
+    #previewContainer .btn-remove {
+        position: absolute;
+        top: 6px;
+        right: 6px;
+        font-size: 12px;
+        padding: 2px 8px;
+    }
+
+    #previewContainer::-webkit-scrollbar {
+        height: 8px;
+    }
+
+    #previewContainer::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+
+    #previewContainer::-webkit-scrollbar-track {
+        background: #f1f1f1;
+    }
+/* Autocomplete styling with higher specificity */
+#frmAddProduct .ui-autocomplete {
+    max-height: 200px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    background-color: #ffffff !important;
+    border: 1px solid #ccc !important;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2) !important;
+    z-index: 2000 !important; /* Increased z-index */
+    border-radius: 4px !important;
+    opacity: 1 !important; /* Explicitly set opacity to 1 */
+}
+#frmAddProduct .ui-autocomplete .ui-menu-item {
+   padding: 8px 12px !important;
+   color: #333 !important;
+   font-size: 14px !important;
+}
+
+#frmAddProduct .ui-autocomplete .ui-menu-item:hover,
+#frmAddProduct .ui-autocomplete .ui-state-active {
+   background-color: #007bff !important;
+   color: #ffffff !important;
+   cursor: pointer !important;
+}
