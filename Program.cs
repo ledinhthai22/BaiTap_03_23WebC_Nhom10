@@ -11,14 +11,6 @@ namespace BaiTap_03_23WebC_Nhom10
             builder.Services.AddSession();//Đăng ký session
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<DatabaseHelper>();
-            builder.Services.AddScoped<ProductService>(provider =>
-            {
-                var env = provider.GetRequiredService<IWebHostEnvironment>();
-                string dbPath = Path.Combine(env.WebRootPath, "data", "db.json");
-                return new ProductService(dbPath);
-            });
-            builder.Services.AddScoped<DatabaseHelper>();
-
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
@@ -33,6 +25,7 @@ namespace BaiTap_03_23WebC_Nhom10
             app.UseSession();//Dùng session
             app.UseAuthorization();
             //app.UseMiddleware<Middleware.ProductMiddleware>();
+            app.UseStaticFiles(); 
             app.MapStaticAssets();
             app.MapControllerRoute(
                  name: "areas",
