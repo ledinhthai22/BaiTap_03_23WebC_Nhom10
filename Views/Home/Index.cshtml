@@ -32,7 +32,6 @@
             }
 
             const latestProduct = (p) => {
-                // KHẮC PHỤC LỖI NaN: Chuyển đổi rõ ràng sang số
                 const priceValue = parseFloat(p.price) || 0;
                 const discountValue = parseFloat(p.discount) || 0;
 
@@ -47,19 +46,17 @@
                     price = `<ins>${priceFormatted}</ins>`;
                 }
 
-                const detail = `@Url.Action("Detail", "Product")/${p.id}`;
-                const cart = `@Url.Action("cart", "product")`;
 
                 return `
                     <div class="single-product">
                         <div class="product-f-image">
                             <img src="/img/${p.image}" alt="">
                             <div class="product-hover">
-                                <a href="${cart}" class="add-to-cart-link"><i class="fa fa-shopping-cart"></i> Add to cart</a>
-                                <a href="${detail}" class="view-details-link"><i class="fa fa-link"></i> See details</a>
+                                <a href="#" class="add-to-cart-link"><i class="fa fa-shopping-cart"></i> Add to cart</a>
+                                <a href="/product/detail/${p.id}" class="view-details-link"><i class="fa fa-link"></i> See details</a>
                             </div>
                         </div>
-                        <h2><a href="${detail}">${p.productName}</a></h2>
+                        <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-carousel-price">
                             ${price}
                         </div>
@@ -82,11 +79,10 @@
                     price = `<ins>${priceFormatted}</ins>`;
                 }
 
-                const detail = `@Url.Action("Detail", "Product")/${p.id}`;
                 return `
                     <div class="single-wid-product">
-                        <a href="${detail}"><img src="/img/${p.image}" alt="" class="product-thumb"></a>
-                        <h2><a href="${detail}">${p.productName}</a></h2>
+                        <a href="/product/detail/${p.id}"><img src="/img/${p.image}" alt="" class="product-thumb"></a>
+                        <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-wid-rating">
                             <i class="fa fa-star"></i>
                             <i class="fa fa-star"></i>
@@ -102,7 +98,7 @@
             };
 
             $.ajax({
-                url: '@Url.Action("GetProducts", "API", new { area = "API" })',
+                url: '@Url.Content("~/api/products")',
                 type: 'GET',
                 dataType: 'json',
                 success: function (products) {
@@ -142,10 +138,10 @@
                         products.slice(0, 3).forEach(p => { topSellersHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(1) .single-product-widget').append(topSellersHtml);
 
-                        products.slice(3, 6).forEach(p => { recentlyViewedHtml += widgetProduct(p); });
+                        products.slice(0, 3).forEach(p => { recentlyViewedHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(2) .single-product-widget').append(recentlyViewedHtml);
 
-                        products.slice(6, 9).forEach(p => { topNewHtml += widgetProduct(p); });
+                        products.slice(0, 3).forEach(p => { topNewHtml += widgetProduct(p); });
                         $('.product-widget-area .col-md-4:nth-child(3) .single-product-widget').append(topNewHtml);
                     } else {
                         $('.maincontent-area').html('<div class="container"><div class="row"><div class="col-md-12"><h2 class="section-title">Không tìm thấy sản phẩm nào.</h2></div></div></div>');
@@ -281,6 +277,7 @@
                 <div class="latest-product">
                     <h2 class="section-title">Latest Products</h2>
                     <div class="product-carousel">
+                        @* Chèn data latest products vào đây *@
                     </div>
                 </div>
             </div>
@@ -317,18 +314,21 @@
                 <div class="single-product-widget">
                     <h2 class="product-wid-title">Top Sellers</h2>
                     <a href="#" class="wid-view-more">View All</a>
+                    @* Chèn data topSellers vào đây *@
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="single-product-widget">
                     <h2 class="product-wid-title">Recently Viewed</h2>
                     <a href="#" class="wid-view-more">View All</a>
+                    @* Chèn data recentView vào đây *@
                 </div>
             </div>
             <div class="col-md-4">
                 <div class="single-product-widget">
                     <h2 class="product-wid-title">Top New</h2>
                     <a href="#" class="wid-view-more">View All</a>
+                    @* Chèn data topNew vào đây *@
                 </div>
             </div>
         </div>
