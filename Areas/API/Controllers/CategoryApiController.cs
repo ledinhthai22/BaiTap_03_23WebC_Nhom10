@@ -35,7 +35,7 @@ namespace BaiTap_03_23WebC_Nhom10.API.Controllers
                     {
                         id = Convert.ToInt32(row["ID"]),
                         categoryName = row["CATEGORY_NAME"].ToString(),
-                        status = row["STATUS"] == DBNull.Value ? (bool?)null : (Convert.ToInt32(row["STATUS"]) == 1)
+                        status = row["STATUS"] == DBNull.Value ? false : (Convert.ToInt32(row["STATUS"]) == 1)
                     });
                 }
                 return Ok(categories);

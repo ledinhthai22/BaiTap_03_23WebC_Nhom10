@@ -31,8 +31,8 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers
                 AND U.STATUS = 1";
             var paramenters = new SqlParameter[]
             {
-                new SqlParameter("@UserName", user.UserName ?? ""),
-                new SqlParameter("@Password", user.PassWord ?? "")
+                new SqlParameter("@UserName", user.userName ?? ""),
+                new SqlParameter("@Password", user.passWord ?? "")
             };
             DataTable result = _db.ExecuteQuery(sql, paramenters);
 
@@ -40,7 +40,7 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers
             {
                 var row = result.Rows[0];
                 string role = row["Role_Name"].ToString();
-                HttpContext.Session.SetString("UserName", user.UserName);
+                HttpContext.Session.SetString("UserName", user.userName);
                 HttpContext.Session.SetString("UserRole", role);
                 if (role == "Admin")
                     return RedirectToAction("Index", "Home", new { area = "Admin" });

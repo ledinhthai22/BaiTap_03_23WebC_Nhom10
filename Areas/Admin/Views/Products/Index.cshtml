@@ -57,10 +57,11 @@
                 let pageData = productsData.slice(start, end);
 
                 let html = '<table class="table table-bordered table-striped">';
-                html += '<thead><tr><th>Tên</th><th>Giá</th><th>Discount</th><th>Category</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+                html += '<thead><tr><th>Id</th><th>Tên</th><th>Giá</th><th>Discount</th><th>Category</th><th>Status</th><th>Action</th></tr></thead><tbody>';
 
                 pageData.forEach(p => {
                     html += `<tr>
+                        <td>${p.id || 'Chưa có'}</td>
                         <td>${p.productName || 'Chưa có'}</td>
                         <td>${p.price || 0}</td>
                         <td>${p.discount || 0}</td>
