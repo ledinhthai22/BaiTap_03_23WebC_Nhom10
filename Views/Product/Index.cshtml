@@ -26,37 +26,44 @@
             };
 
             const latestProduct = (p) => {
+                // Lấy ảnh đầu tiên từ p.image hoặc p.imageList
+                let mainImage = "/img/no-image.jpg"; // Ảnh mặc định
+                if (p.imageList && Array.isArray(p.imageList) && p.imageList.length > 0) {
+                    mainImage = p.imageList[0]; // Ưu tiên imageList từ API
+                } else if (typeof p.image === "string" && p.image.trim() !== "") {
+                    const images = p.image.split(";").map(x => x.trim());
+                    mainImage = images.length > 0 ? `/img/${images[0]}` : mainImage;
+                }
+
                 const discountedPrice = p.price * (1 - p.discount);
                 const formattedDiscountedPrice = formatCurrency(discountedPrice);
                 const formattedOriginalPrice = formatCurrency(p.price);
 
                 return `
                     <div class="col-md-3 col-sm-6" style="height:450px">
-                        <div class="single-shop-product"> 
-                            <div class="product-upper"> 
-                                <img src="img/${p.image}" alt=""> 
+                        <div class="single-shop-product">
+                            <div class="product-upper">
+                                <img src="${mainImage}" alt="${p.productName || 'Product'}">
                             </div>
                             <h2 class="text-center" style="font-size:16px; height:48px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
                                 <a href="/product/detail/${p.id}">${p.productName}</a>
                             </h2>
-                            <div class="product-carousel-price text-center"> 
-                                <ins>${formattedDiscountedPrice}</ins> <del>${formattedOriginalPrice}</del> 
+                            <div class="product-carousel-price text-center">
+                                <ins>${formattedDiscountedPrice}</ins> <del>${formattedOriginalPrice}</del>
                             </div>
                             <div class="product-option-shop text-center mt-3">
-                                <a class="add_to_cart_button" data-quantity="1" href="#">Add to cart</a> 
-                            </div> 
-                         </div> 
-                     </div>
-        `;
-
-
+                                <a class="add_to_cart_button" data-quantity="1" href="#">Add to cart</a>
+                            </div>
+                        </div>
+                    </div>
+                `;
             };
 
-            const pageSize = 8; 
+            const pageSize = 8;
             let currentPage = 1;
             let products = [];
 
-                const renderProducts = () => {
+            const renderProducts = () => {
                 const start = (currentPage - 1) * pageSize;
                 const end = start + pageSize;
                 const pagedProducts = products.slice(start, end);
@@ -70,22 +77,20 @@
                 renderPagination();
             };
 
-
             const renderPagination = () => {
-            const totalPages = Math.ceil(products.length / pageSize);
-            let paginationHtml = '';
+                const totalPages = Math.ceil(products.length / pageSize);
+                let paginationHtml = '';
 
-            for (let i = 1; i <= totalPages; i++) {
-                paginationHtml += `
-                    <li class="page-item ${i === currentPage ? 'active' : ''}">
-                       <a class="page-link" href="#" data-page="${i}">${i}</a>
-                    </li>`;
+                for (let i = 1; i <= totalPages; i++) {
+                    paginationHtml += `
+                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                            <a class="page-link" href="#" data-page="${i}">${i}</a>
+                        </li>`;
                 }
 
                 $('.pagination').html(paginationHtml);
             };
 
-            
             $(document).on('click', '.pagination a', function (e) {
                 e.preventDefault();
                 currentPage = parseInt($(this).data('page'));
@@ -97,6 +102,7 @@
                 type: 'GET',
                 dataType: 'json',
                 success: function (data) {
+                    console.log("API Response:", data); // Log để debug
                     if (data && data.length > 0) {
                         products = data;
                         renderProducts();
@@ -106,11 +112,11 @@
                 },
                 error: function (xhr, status, error) {
                     console.error("LỖI KHI TẢI SẢN PHẨM:", status, error);
+                    $('.maincontent-area').html('<div class="container"><div class="row"><div class="col-md-12"><h2 class="section-title">Có lỗi khi tải sản phẩm.</h2></div></div></div>');
                 }
             });
         });
     </script>
-
 }
 
 @section subtitle {
@@ -135,7 +141,6 @@
     <div class="zigzag-bottom"></div>
     <div class="container">
         <div class="row product-carousel">
-            
         </div>
 
         <div class="row">
@@ -143,9 +148,6 @@
                 <div class="product-pagination text-center">
                     <nav>
                         <ul class="pagination">
-                            @* @{
-                                
-                            } *@
                         </ul>
                     </nav>
                 </div>

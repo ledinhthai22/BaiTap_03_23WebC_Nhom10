@@ -1,6 +1,6 @@
 ﻿@using System.Text.Json
 @section title {
-    Product - eElectronics - HTML eCommerce Template
+        Product - eElectronics - HTML eCommerce Template
 }
 @section css {
 }
@@ -54,10 +54,6 @@
 @section js {
     <script>
         $(document).ready(function () {
-            if (typeof jQuery == 'undefined') {
-                return;
-            }
-
             const formatCurrency = (amount) => {
                 const amountValue = parseFloat(amount) || 0;
                 const formatter = new Intl.NumberFormat('vi-VN', {
@@ -71,13 +67,10 @@
             const currentProductId = parseInt('@(ViewContext.RouteData.Values["id"]?.ToString())') || null;
 
             if (!currentProductId || currentProductId === 'null') {
-                console.log("Không tìm thấy Product ID trong Route Data!");
                 $('#single-product-content').html('<h2>Sản phẩm không tồn tại hoặc ID không hợp lệ.</h2>');
+                return;
             }
 
-
-
-           //Tạo là render phần Detail
             const renderProductDetail = (p) => {
                 let finalPrice = p.price * (1 - p.discount);
                 let finalPriceFormatted = formatCurrency(finalPrice);
@@ -90,18 +83,44 @@
                     priceHtml = `<ins>${priceFormatted}</ins>`;
                 }
 
-                const categoryName = "Electronics";
+                // const categoryName = "Electronics";
 
                 $('#breadcrumb-home-placeholder').html(`<a href="/">Home</a>`);
-                $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${categoryName}</a>`);
+                $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${p.categoryName}</a>`);
                 $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="/product/detail/${p.id}">${p.productName}</a>`);
+
+                let images = [];
+                if (p.imageList && Array.isArray(p.imageList) && p.imageList.length > 0) {
+                    images = p.imageList;
+                } else if (p.images && Array.isArray(p.images) && p.images.length > 0) {
+                    images = p.images;
+                } else if (typeof p.image === "string" && p.image.includes(";")) {
+                    images = p.image.split(";").map(x => x.trim());
+                } else if (typeof p.image === "string" && p.image.trim() !== "") {
+                    images = [p.image.trim()];
+                } else {
+                    images = ["/img/no-image.jpg"];
+                    console.warn("No valid image data found, using default: /img/no-image.jpg");
+                }
+
+                let mainImage = images.length > 0 ? images[0] : "/img/no-image.jpg";
+                let thumbnails = images.map(img => `
+                    <div class="col-xs-3 mb-2">
+                        <img src="${img}" alt="${p.productName}"
+                             class="img-thumbnail thumb-image"
+                             style="cursor:pointer; transition:0.2s; max-height:80px; object-fit: cover; width: 100%; height: 80px;">
+                    </div>
+                `).join('');
 
                 return `
                     <div class="row">
                         <div class="col-sm-6">
                             <div class="product-images">
                                 <div class="product-main-img">
-                                    <img src="/img/${p.image}" alt="${p.productName}">
+                                    <img id="main-product-img" src="${mainImage}" alt="${p.productName}"class="img-fluid rounded shadow" style="width: 100%; height: 400px; object-fit: cover;">
+                                </div>
+                                <div class="row mt-3">
+                                    ${thumbnails}
                                 </div>
                             </div>
                         </div>
@@ -118,19 +137,21 @@
                                     <button class="add_to_cart_button" type="submit">Add to cart</button>
                                 </form>
                                 <div class="product-inner-category">
-                                    <p>
-                                        Category: <a href="#">${categoryName}</a>
-                                    </p>
+                                    <p>Category: <a href="#">${p.categoryName}</a></p>
                                 </div>
                                 <div role="tabpanel">
                                     <ul class="product-tab" role="tablist">
-                                        <li role="presentation" class="active"><a href="#home" aria-controls="home" role="tab" data-toggle="tab">Description</a></li>
-                                        <li role="presentation"><a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a></li>
+                                        <li role="presentation" class="active">
+                                            <a href="#home" aria-controls="home" role="tab" data-toggle="tab">Description</a>
+                                        </li>
+                                        <li role="presentation">
+                                            <a href="#profile" aria-controls="profile" role="tab" data-toggle="tab">Reviews</a>
+                                        </li>
                                     </ul>
                                     <div class="tab-content">
                                         <div role="tabpanel" class="tab-pane fade in active" id="home">
                                             <h2>Product Description</h2>
-                                            <p>${p.description}</p>
+                                            <p>${p.description || "Không có mô tả."}</p>
                                         </div>
                                         <div role="tabpanel" class="tab-pane fade" id="profile">
                                             <h2>Reviews</h2>
@@ -147,7 +168,8 @@
                                                         <i class="fa fa-star"></i>
                                                     </div>
                                                 </div>
-                                                <p><label for="review">Your review</label> <textarea name="review" id="" cols="30" rows="10"></textarea></p>
+                                                <p><label for="review">Your review</label>
+                                                    <textarea name="review" cols="30" rows="10"></textarea></p>
                                                 <p><input type="submit" value="Submit"></p>
                                             </div>
                                         </div>
@@ -161,30 +183,30 @@
 
             const loadProductDetail = (productId) => {
                 $.ajax({
-                    url: `/api/products/${productId}`         ,
+                    url: `/api/products/${productId}`,
                     type: 'GET',
                     dataType: 'json',
                     success: function (product) {
+                        console.log("API Response:", product); // Log để debug
                         if (product) {
                             const html = renderProductDetail(product);
                             $('#single-product-content').html(html);
+                            $(document).on('click', '.thumb-image', function () {
+                                const src = $(this).attr('src');
+                                $('#main-product-img').attr('src', src);
+                            });
                         } else {
                             $('#single-product-content').html('<h2>Sản phẩm không tồn tại.</h2>');
                         }
                     },
-                    error: function (jqXHR, textStatus, errorThrown) {
-                        console.log("Lỗi khi tải chi tiết sản phẩm: ", textStatus, errorThrown);
+                    error: function (xhr, status, error) {
+                        console.error("AJAX Error:", error); // Log lỗi AJAX
                         $('#single-product-content').html('<h2>Có lỗi xảy ra khi tải dữ liệu.</h2>');
                     }
                 });
             };
 
-            if (currentProductId) {
-                loadProductDetail(currentProductId);
-            }
-
-
-           //Tạo là render phần Sidebar (List Product)
+            // Tạo và render phần Sidebar (List Product)
             const renderSidebarProduct = (p) => {
                 const priceValue = parseFloat(p.price) || 0;
                 const discountValue = parseFloat(p.discount) || 0;
@@ -196,9 +218,16 @@
                     ? `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`
                     : `<ins>${priceFormatted}</ins>`;
 
+                // Tách chuỗi image và lấy ảnh đầu tiên
+                let mainImage = "/img/no-image.jpg";
+                if (typeof p.image === "string" && p.image.trim() !== "") {
+                    const images = p.image.split(";").map(x => x.trim());
+                    mainImage = images.length > 0 ? `/img/${images[0]}` : mainImage;
+                }
+
                 return `
                     <div class="thubmnail-recent">
-                        <img src="/img/${p.image}" class="recent-thumb" alt="${p.productName}">
+                        <img src="${mainImage}" class="recent-thumb" alt="${p.productName}">
                         <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-sidebar-price">
                             ${priceHtml}
@@ -227,10 +256,8 @@
                 });
             };
 
-
-
-           //Tạo là render phần RecentPost
-           const renderRecentPost = (p) => {    
+            // Tạo và render phần RecentPost
+            const renderRecentPost = (p) => {
                 return `
                     <li>
                         <a href="/product/detail/${p.id}">${p.productName}</a>
@@ -259,8 +286,7 @@
                 });
             };
 
-
-            //Tạo là render phần RelatedProduct
+            // Tạo và render phần RelatedProduct
             const renderRelatedProduct = (p) => {
                 const priceValue = parseFloat(p.price) || 0;
                 const discountValue = parseFloat(p.discount) || 0;
@@ -272,14 +298,19 @@
                     ? `<ins>${finalPriceFormatted}</ins><br/><del>${priceFormatted}</del>`
                     : `<ins>${priceFormatted}</ins>`;
 
+                // Tách chuỗi image và lấy ảnh đầu tiên
+                let mainImage = "/img/no-image.jpg";
+                if (typeof p.image === "string" && p.image.trim() !== "") {
+                    const images = p.image.split(";").map(x => x.trim());
+                    mainImage = images.length > 0 ? `/img/${images[0]}` : mainImage;
+                }
+
                 return `
                     <div class="single-product">
-                        <div class="product-f-image">
-                            <img src="/img/${p.image}" alt="${p.productName}">
+                        <div class="product-f-image" style="height: 270px; overflow: hidden; display: block;">
+                            <img src="${mainImage}" alt="" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
-
                         <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
-
                         <div class="product-carousel-price">
                             ${priceHtml}
                         </div>
@@ -317,7 +348,6 @@
                                 1000: { items: 4, nav: true, loop: false }
                             }
                         });
-
                     },
                     error: function (xhr, status, error) {
                         console.error('Lỗi khi tải sản phẩm liên quan:', error);
@@ -325,10 +355,11 @@
                     }
                 });
             };
-            //Load Partial
+
             loadSidebarProducts();
             loadRecentPosts();
             loadRelatedProducts();
+            loadProductDetail(currentProductId);
         });
     </script>
 }
