@@ -124,7 +124,7 @@
 
                 if (files.length > 5) {
                     errorDiv.show();
-                    $(this).val(''); // Clear the input
+                    $(this).val('');
                     return;
                 } else {
                     errorDiv.hide();
@@ -132,20 +132,39 @@
 
                 Array.from(files).forEach(file => {
                     const url = URL.createObjectURL(file);
-                    const item = $(`
-                        <div class="d-inline-block position-relative m-2">
-                            <img src="${url}" class="preview-img" style="max-width: 100px; max-height: 100px;">
-                        </div>
-                    `);
+                    const item = $(`<div class="d-inline-block position-relative m-2">
+                                        <img src="${url}" class="preview-img" style="max-width: 100px; max-height: 100px;">
+                                    </div>`);
                     container.append(item);
                 });
             });
 
-            $('#btnAdd').click(() => {
+            $('#btnAdd').click(async () => {
                 const files = $('#IMAGE')[0].files;
                 if (files.length > 5) {
                     alert('Chỉ được phép chọn tối đa 5 hình ảnh!');
                     return;
+                }
+
+                let tagName = $('#TAG_ID').val().trim();
+                let tagID = null;
+                if(tagName){
+                    try{
+                        const existingTags = await $.getJSON('/api/tags');
+                        const existingTag = existingTags.find(t => t.tagName.toLowerCase() === tagName.toLowerCase());
+                        if(existingTag){
+                            tagID = existingTag.id;
+                        }else{
+                            const newTag = await $.ajax({
+                                url: '/api/tags',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ tagName })
+                            });
+                        }
+                    }catch(err){
+                        return alert('Lỗi khi xử lý tag: ' + (err.responseJSON?.error || err.statusText));
+                    }
                 }
 
                 const formData = new FormData();
@@ -155,7 +174,7 @@
                 formData.append('discount', $('#DISCOUNT').val());
                 formData.append('description', $('#DESCRIPTION').val());
                 formData.append('categoryID', $('#CATEGORY_ID').val());
-                formData.append('tagID', $('#TAG_ID').val().trim());
+                if(tagID) formData.append('tagID', tagID);
 
                 if (files && files.length > 0) {
                     Array.from(files).slice(0, 5).forEach((file, i) => {
@@ -171,7 +190,6 @@
                     contentType: false,
                     success: res => {
                         alert(res.message || 'Thêm sản phẩm thành công!');
-                        // Reset form
                         $('#frmAddProduct')[0].reset();
                         $('#previewContainer').empty();
                         $('#imageError').hide();
