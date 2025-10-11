@@ -83,10 +83,10 @@
                     priceHtml = `<ins>${priceFormatted}</ins>`;
                 }
 
-                const categoryName = "Electronics";
+                // const categoryName = "Electronics";
 
                 $('#breadcrumb-home-placeholder').html(`<a href="/">Home</a>`);
-                $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${categoryName}</a>`);
+                $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${p.categoryName}</a>`);
                 $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="/product/detail/${p.id}">${p.productName}</a>`);
 
                 let images = [];
@@ -117,9 +117,7 @@
                         <div class="col-sm-6">
                             <div class="product-images">
                                 <div class="product-main-img">
-                                    <img id="main-product-img" src="${mainImage}" alt="${p.productName}"
-                                         class="img-fluid rounded shadow"
-                                         style="max-width: 100%; max-height: 400px; object-fit: cover;">
+                                    <img id="main-product-img" src="${mainImage}" alt="${p.productName}"class="img-fluid rounded shadow" style="width: 100%; height: 400px; object-fit: cover;">
                                 </div>
                                 <div class="row mt-3">
                                     ${thumbnails}
@@ -309,8 +307,8 @@
 
                 return `
                     <div class="single-product">
-                        <div class="product-f-image">
-                            <img src="${mainImage}" alt="${p.productName}">
+                        <div class="product-f-image" style="height: 270px; overflow: hidden; display: block;">
+                            <img src="${mainImage}" alt="" style="width: 100%; height: 100%; object-fit: contain;">
                         </div>
                         <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-carousel-price">
