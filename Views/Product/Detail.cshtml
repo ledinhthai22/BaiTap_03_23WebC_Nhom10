@@ -161,7 +161,7 @@
 
             const loadProductDetail = (productId) => {
                 $.ajax({
-                    url: `/api/products/${productId}`,
+                    url: `/api/products/${productId}`         ,
                     type: 'GET',
                     dataType: 'json',
                     success: function (product) {
@@ -269,7 +269,7 @@
                 let priceFormatted = formatCurrency(p.price);
 
                 let priceHtml = p.discount > 0
-                    ? `<ins>${finalPriceFormatted}</ins><del>${priceFormatted}</del>`
+                    ? `<ins>${finalPriceFormatted}</ins><br/><del>${priceFormatted}</del>`
                     : `<ins>${priceFormatted}</ins>`;
 
                 return `
