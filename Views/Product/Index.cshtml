@@ -3,175 +3,54 @@
 @model List<Product>
 
 @section title {
-            Shop - eElectronics - HTML eCommerce Template
+     Shop - eElectronics - HTML eCommerce Template
 }
 
 @section css {
-}
-
+}   
 @section js {
-    @* <script>
-        $(document).ready(function () {
-            if (typeof jQuery == 'undefined') {
-                return;
-            }
-
-            const formatCurrency = (amount) => {
-                const formatter = new Intl.NumberFormat('vi-VN', {
-                    style: 'currency',
-                    currency: 'VND',
-                    minimumFractionDigits: 0
-                });
-                return formatter.format(amount).replace("₫", "VNĐ");
-            };
-
-            const latestProduct = (p) => {
-                const discountedPrice = p.price * (1 - p.discount);
-                const formattedDiscountedPrice = formatCurrency(discountedPrice);
-                const formattedOriginalPrice = formatCurrency(p.price);
-
-                return `
-                    <div class="col-md-3 col-sm-6" style="height:450px">
-                        <div class="single-shop-product">
-                            <div class="product-upper">
-                                <img src="img/${p.image}" alt="">
-                            </div>
-                            <h2 class="text-center" style="font-size:16px; height:48px; overflow:hidden; text-overflow:ellipsis; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical;">
-                                <a href="/product/detail/${p.id}">${p.productName}</a>
-                            </h2>
-                            <div class="product-carousel-price text-center">
-                                <ins>${formattedDiscountedPrice}</ins> <del>${formattedOriginalPrice}</del>
-                            </div>
-                            <div class="product-option-shop text-center mt-3">
-                                <a class="add_to_cart_button" data-quantity="1" href="#">Add to cart</a>
-                            </div>
-                         </div>
-                     </div>
-        `;
-
-
-            };
-
-            const pageSize = 8;
-            let currentPage = 1;
-            let products = [];
-
-                const renderProducts = () => {
-                const start = (currentPage - 1) * pageSize;
-                const end = start + pageSize;
-                const pagedProducts = products.slice(start, end);
-
-                let html = '';
-                pagedProducts.forEach(p => {
-                    html += latestProduct(p);
-                });
-                $('.product-carousel').html(html);
-
-                renderPagination();
-            };
-
-
-            const renderPagination = () => {
-            const totalPages = Math.ceil(products.length / pageSize);
-            let paginationHtml = '';
-
-            for (let i = 1; i <= totalPages; i++) {
-                paginationHtml += `
-                    <li class="page-item ${i === currentPage ? 'active' : ''}">
-                       <a class="page-link" href="#" data-page="${i}">${i}</a>
-                    </li>`;
-                }
-
-                $('.pagination').html(paginationHtml);
-            };
-
-
-            $(document).on('click', '.pagination a', function (e) {
-                e.preventDefault();
-                currentPage = parseInt($(this).data('page'));
-                renderProducts();
-            });
-
-            $.ajax({
-                url: '@Url.Content("~/api/products")',
-                type: 'GET',
-                dataType: 'json',
-                success: function (data) {
-                    if (data && data.length > 0) {
-                        products = data;
-                        renderProducts();
-                    } else {
-                        $('.maincontent-area').html('<div class="container"><div class="row"><div class="col-md-12"><h2 class="section-title">Không tìm thấy sản phẩm nào.</h2></div></div></div>');
-                    }
-                },
-                error: function (xhr, status, error) {
-                    console.error("LỖI KHI TẢI SẢN PHẨM:", status, error);
-                }
-            });
-        });
-    </script> *@
-    <div id="product-container" class="row"></div>
-
-    <ul class="pagination text-center"></ul>
-
     <script>
         $(document).ready(function () {
-            const pageSize = 8;
+            const pageSize = 8; 
             let currentPage = 1;
-            let products = []; // sẽ được load bằng AJAX hoặc từ server
 
-            // Giả sử bạn có 1 API trả về JSON danh sách sản phẩm
-            $.getJSON('/api/products', function (data) {
-                products = data;
-                renderProducts();
+            const $products = $(".product-item");
+            const totalProducts = $products.length;
+            const totalPages = Math.ceil(totalProducts / pageSize);
+
+            function renderPage() {
+                $products.hide();
+                const start = (currentPage - 1) * pageSize;
+                const end = start + pageSize;
+                $products.slice(start, end).fadeIn();
                 renderPagination();
-            });
-
-            function renderProducts() {
-                let start = (currentPage - 1) * pageSize;
-                let end = start + pageSize;
-                let pagedProducts = products.slice(start, end);
-                let html = '';
-
-                pagedProducts.forEach(p => {
-                    $.ajax({
-                        url: '/SingleShopProduct', // Gọi ViewComponent
-                        type: 'GET',
-                        data: p, // Gửi nguyên object product (Model binding)
-                        async: false, // cần đồng bộ vì ta đang nối HTML
-                        success: function (data) {
-                            html += data; // nối từng sản phẩm HTML
-                        }
-                    });
-                });
-
-                $('#product-container').html(html);
+                $("html, body").animate({ scrollTop: 0 }, "fast");
             }
 
             function renderPagination() {
-                const totalPages = Math.ceil(products.length / pageSize);
-                let html = '';
+                let html = "";
                 for (let i = 1; i <= totalPages; i++) {
                     html += `
-                        <li class="page-item ${i === currentPage ? 'active' : ''}">
+                        <li class="page-item ${i === currentPage ? "active" : ""}">
                             <a class="page-link" href="#" data-page="${i}">${i}</a>
                         </li>`;
                 }
-                $('.pagination').html(html);
+                $(".pagination").html(html);
             }
 
-            $(document).on('click', '.pagination a', function (e) {
+            $(document).on("click", ".pagination a", function (e) {
                 e.preventDefault();
-                currentPage = parseInt($(this).data('page'));
-                renderProducts();
-                renderPagination();
-                $('html, body').animate({ scrollTop: 0 }, 'fast');
+                const page = $(this).data("page");
+                if (page && page !== currentPage) {
+                    currentPage = page;
+                    renderPage();
+                }
             });
+            renderPage();
         });
     </script>
-
-
 }
+
 
 @section subtitle {
     <div class="product-big-title-area">
@@ -186,10 +65,6 @@
         </div>
     </div>
 }
-
-@* @{
-    ViewBag.PageName = "List";
-} *@
 
 <div class="single-product-area">
     <div class="zigzag-bottom"></div>

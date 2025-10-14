@@ -66,13 +66,8 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                       JOIN TAGS T ON P.TAG_ID = T.ID
                         WHERE P.ID = @id";
 
-                var parameters = new SqlParameter[]
-                {
-                    new("@id", SqlDbType.Int) { Value = id }
-                };
-
-                var param = new SqlParameter("@id", id);
-                DataTable dt = _db.ExecuteQuery(query, new[] { param });
+                var parameters = new SqlParameter[] { new("@id", SqlDbType.Int) { Value = id } };
+                DataTable dt = _db.ExecuteQuery(query, parameters);
 
                 if (dt.Rows.Count == 0)
                     return NotFound(new { error = "Không tìm thấy sản phẩm." });
@@ -100,21 +95,18 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
         {
             try
             {
- 
                 string name = form["productName"];
                 if (string.IsNullOrWhiteSpace(name))
                     return BadRequest(new { error = "Vui lòng nhập tên sản phẩm." });
 
+                
                 string checkQuery = "SELECT COUNT(*) FROM PRODUCTS WHERE PRODUCT_NAME = @name";
                 var checkParam = new SqlParameter("@name", name.Trim());
                 int existingCount = Convert.ToInt32(_db.ExecuteScalar(checkQuery, new[] { checkParam }));
 
                 if (existingCount > 0)
-                {
                     return BadRequest(new { error = "Tên sản phẩm đã tồn tại trong hệ thống!" });
-                }
 
- 
                 var imageNames = new List<string>();
                 if (form.Files != null && form.Files.Count > 0)
                 {
@@ -125,11 +117,43 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                     if (!Directory.Exists(uploadPath))
                         Directory.CreateDirectory(uploadPath);
 
+                  
+                    var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif", ".webp" };
+
                     foreach (var file in form.Files)
                     {
                         if (file.Length > 0)
                         {
-                            string fileName = $"{Guid.NewGuid():N}{Path.GetExtension(file.FileName)}";
+                            string extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+
+                            if (!allowedExtensions.Contains(extension))
+                            {
+                                return BadRequest(new
+                                {
+                                    error = $"File '{file.FileName}' có định dạng không hợp lệ. " +
+                                            $"Chỉ chấp nhận: {string.Join(", ", allowedExtensions)}"
+                                });
+                            }
+
+                            
+                            if (!file.ContentType.StartsWith("image/"))
+                            {
+                                return BadRequest(new
+                                {
+                                    error = $"File '{file.FileName}' không phải là hình ảnh hợp lệ."
+                                });
+                            }
+
+                            
+                            if (file.Length > 5 * 1024 * 1024)
+                            {
+                                return BadRequest(new
+                                {
+                                    error = $"File '{file.FileName}' vượt quá giới hạn dung lượng 5MB."
+                                });
+                            }
+
+                            string fileName = $"{Guid.NewGuid():N}{extension}";
                             using var stream = new FileStream(Path.Combine(uploadPath, fileName), FileMode.Create);
                             file.CopyTo(stream);
                             imageNames.Add(fileName);
@@ -137,11 +161,10 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                     }
                 }
 
-                // Ảnh đầu tiên là ảnh chính
+                
                 string imageList = string.Join(";", imageNames);
                 string mainImage = imageNames.FirstOrDefault();
 
-                // Tag xử lý
                 string tagName = form["tagID"].FirstOrDefault();
                 int? tagId = null;
                 if (!string.IsNullOrEmpty(tagName))
@@ -162,7 +185,6 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                     }
                 }
 
-                //  Parse dữ liệu
                 decimal price = decimal.TryParse(form["price"], out var p) ? p : 0;
                 decimal discount = decimal.TryParse(form["discount"], out var d) ? d / 100 : 0;
                 int? quality = int.TryParse(form["quality"], out var q) ? q : null;
@@ -170,10 +192,10 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                 int categoryId = int.TryParse(form["categoryID"], out var c) ? c : 0;
 
                 string insertQuery = @"
-                                        INSERT INTO PRODUCTS (PRODUCT_NAME, PRICE, DISCOUNT, IMAGE, DESCRIPTION,
-                                                              QUALITY, CATEGORY_ID, TAG_ID, STATUS, CREATE_AT)
-                                        OUTPUT INSERTED.ID
-                                        VALUES (@name, @price, @discount, @image, @desc, @quality, @category, @tag, 1, GETDATE())";
+                    INSERT INTO PRODUCTS (PRODUCT_NAME, PRICE, DISCOUNT, IMAGE, DESCRIPTION,
+                                          QUALITY, CATEGORY_ID, TAG_ID, STATUS, CREATE_AT)
+                    OUTPUT INSERTED.ID
+                    VALUES (@name, @price, @discount, @image, @desc, @quality, @category, @tag, 1, GETDATE())";
 
                 var parameters = new[]
                 {
@@ -188,7 +210,6 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                 };
 
                 var newIdObj = _db.ExecuteScalar(insertQuery, parameters);
-
                 if (newIdObj == null)
                     return StatusCode(500, new { error = "Không thể thêm sản phẩm." });
 
@@ -233,7 +254,6 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                 updateAT = row["UPDATE_AT"] == DBNull.Value ? null : Convert.ToDateTime(row["UPDATE_AT"]),
                 categoryName = row["CATEGORY_NAME"]?.ToString(),
                 tagName = row["TAG_NAME"]?.ToString()
-
             };
         }
     }

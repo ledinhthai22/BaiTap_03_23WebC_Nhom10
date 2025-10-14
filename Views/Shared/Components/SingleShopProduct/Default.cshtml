@@ -1,5 +1,6 @@
 ﻿@model List<BaiTap_03_23WebC_Nhom10.Models.Product>
 @using System.Globalization;
+
 @foreach (var p in Model)
 {
     var culture = new CultureInfo("vi-VN");
@@ -9,8 +10,8 @@
     var detail = "/product/detail/" + @p.id;
     string[] imgPath = p.image.ToString().Split(";");
     var imgLogo = imgPath[0];
-    Console.WriteLine(imgLogo);
-    <div class="col-md-3 col-sm-6" style="height:450px">
+
+    <div class="col-md-3 col-sm-6 product-item" style="height:450px">
         <div class="single-shop-product">
             <div class="product-upper">
                 <img style="width: 300px; height: 300px; object-fit: cover;" src="img/@imgLogo" alt="">
