@@ -83,8 +83,6 @@
                     priceHtml = `<ins>${priceFormatted}</ins>`;
                 }
 
-                // const categoryName = "Electronics";
-
                 $('#breadcrumb-home-placeholder').html(`<a href="/">Home</a>`);
                 $('#breadcrumb-category-placeholder').html(`&nbsp;/&nbsp;<a href="#">${p.categoryName}</a>`);
                 $('#breadcrumb-product-name-placeholder').html(`&nbsp;/&nbsp;<a href="/product/detail/${p.id}">${p.productName}</a>`);
@@ -138,6 +136,9 @@
                                 </form>
                                 <div class="product-inner-category">
                                     <p>Category: <a href="#">${p.categoryName}</a></p>
+                                </div>
+                                <div class="product-inner-tag">
+                                    <p>Tags: </a></p>
                                 </div>
                                 <div role="tabpanel">
                                     <ul class="product-tab" role="tablist">
@@ -227,7 +228,7 @@
 
                 return `
                     <div class="thubmnail-recent">
-                        <img src="${mainImage}" class="recent-thumb" alt="${p.productName}">
+                        <a href="/product/detail/${p.id}"><img src="${mainImage}" class="recent-thumb" alt="${p.productName}"></a>
                         <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-sidebar-price">
                             ${priceHtml}
@@ -308,7 +309,7 @@
                 return `
                     <div class="single-product">
                         <div class="product-f-image" style="height: 270px; overflow: hidden; display: block;">
-                            <img src="${mainImage}" alt="" style="width: 100%; height: 100%; object-fit: contain;">
+                            <a href="/product/detail/${p.id}"><img src="${mainImage}" alt="" style="width: 100%; height: 100%; object-fit: contain;"></a>
                         </div>
                         <h2><a href="/product/detail/${p.id}">${p.productName}</a></h2>
                         <div class="product-carousel-price">

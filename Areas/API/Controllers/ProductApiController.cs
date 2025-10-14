@@ -58,13 +58,17 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
             try
             {
                 string query = @"
-                     SELECT P.ID, P.PRODUCT_NAME, P.PRICE, P.DISCOUNT, P.IMAGE, P.DESCRIPTION,
-                             P.QUALITY, P.CATEGORY_ID, P.TAG_ID, P.VIEWS, P.SELLED, 
-                             P.STATUS, C.CATEGORY_NAME, T.TAG_NAME , P.CREATE_AT, P.UPDATE_AT
-                      FROM PRODUCTS P
-                      JOIN CATEGORY C ON P.CATEGORY_ID = C.ID
-                      JOIN TAGS T ON P.TAG_ID = T.ID
-                    WHERE P.ID = @id";
+                        SELECT P.ID, P.PRODUCT_NAME, P.PRICE, P.DISCOUNT, P.IMAGE, P.DESCRIPTION,
+                               P.QUALITY, P.CATEGORY_ID, P.TAG_ID, P.VIEWS, P.SELLED, P.STATUS, C.CATEGORY_NAME, 
+                               P.CREATE_AT, P.UPDATE_AT 
+                        FROM dbo.PRODUCTS P 
+                        JOIN CATEGORY C ON P.CATEGORY_ID = C.ID
+                        WHERE P.ID = @id";
+
+                var parameters = new SqlParameter[]
+                {
+                    new("@id", SqlDbType.Int) { Value = id }
+                };
 
                 var param = new SqlParameter("@id", id);
                 DataTable dt = _db.ExecuteQuery(query, new[] { param });
