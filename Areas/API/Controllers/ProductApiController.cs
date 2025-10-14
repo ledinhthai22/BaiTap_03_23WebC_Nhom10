@@ -65,7 +65,7 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
 
                 var parameters = new SqlParameter[]
                 {
-            new("@id", SqlDbType.Int) { Value = id }
+                    new("@id", SqlDbType.Int) { Value = id }
                 };
 
                 DataTable dt = _db.ExecuteQuery(query, parameters);
