@@ -11,6 +11,7 @@ namespace BaiTap_03_23WebC_Nhom10
             builder.Services.AddSession();//Đăng ký session
             builder.Services.AddControllersWithViews();
             builder.Services.AddScoped<DatabaseHelper>();
+            builder.Services.AddHttpClient();//gui lai
             var app = builder.Build();
 
             if (!app.Environment.IsDevelopment())
