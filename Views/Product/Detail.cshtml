@@ -326,7 +326,7 @@
                     dataType: 'json',
                     success: function (products) {
                         let htmlContent = '';
-                        products.filter(p => p.id !== currentProductId).slice(0, 6).forEach(p => {
+                        products.filter(p => p.id !== currentProductId).forEach(p => {
                             htmlContent += renderRelatedProduct(p);
                         });
 
