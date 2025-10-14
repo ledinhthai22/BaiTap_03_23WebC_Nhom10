@@ -1,43 +1,51 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http;
-using Newtonsoft.Json;
-using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace BaiTap_03_23WebC_Nhom10.Models
 {
     public class Product
     {
+        [Key]
         public int id { get; set; }
 
-        [Required]
-        public string? productName { get; set; }
+        [Required(ErrorMessage = "Tên sản phẩm là bắt buộc")]
+        [StringLength(255)]
+        public string productName { get; set; } = string.Empty;
 
-        [Range(0, (double)decimal.MaxValue)]
+        [Range(0, 9999999999999999.99, ErrorMessage = "Giá không hợp lệ")]
         public decimal price { get; set; }
 
-        [Range(0, 1)]
+        [Range(0, 100, ErrorMessage = "Giảm giá phải từ 0% đến 100%")]
         public decimal discount { get; set; }
 
+        [StringLength(255)]
         public string? image { get; set; }
 
+        [StringLength(255)]
         public string? description { get; set; }
 
+        [Range(0, int.MaxValue)]
         public int? quality { get; set; }
 
+        [Required(ErrorMessage = "Vui lòng chọn danh mục")]
         public int categoryID { get; set; }
 
-        public int tagID { get; set; }
+        public int? tagID { get; set; }
 
-        public int? views { get; set; }
+        public int views { get; set; } = 0;
+        public int selled { get; set; } = 0;
+        public bool status { get; set; } = true;
 
-        public int? selled { get; set; }
-
-        public bool? status { get; set; }
-        public string? categoryName { get; set; }
-        public DateTime? createAT { get; set; }
-
+        public DateTime createAT { get; set; } = DateTime.Now;
         public DateTime? updateAT { get; set; }
+
+        [NotMapped]
+        public string? categoryName { get; set; }
+
+        [NotMapped]
+        public string? tagName { get; set; }
+
+        [NotMapped]
         public List<string>? imageList { get; set; }
     }
 }

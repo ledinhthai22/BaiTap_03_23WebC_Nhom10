@@ -30,7 +30,7 @@
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         $(document).ready(function () {
-            const pageSize = 5; // Số sản phẩm mỗi trang
+            const pageSize = 8; // Số sản phẩm mỗi trang
             let currentPage = 1;
             let productsData = []; // Lưu tất cả sản phẩm
 
@@ -57,10 +57,11 @@
                 let pageData = productsData.slice(start, end);
 
                 let html = '<table class="table table-bordered table-striped">';
-                html += '<thead><tr><th>Tên</th><th>Giá</th><th>Discount</th><th>Category</th><th>Status</th><th>Action</th></tr></thead><tbody>';
+                html += '<thead><tr><th>Id</th><th>Tên</th><th>Giá</th><th>Discount</th><th>Category</th><th>Status</th><th>Action</th></tr></thead><tbody>';
 
                 pageData.forEach(p => {
                     html += `<tr>
+                        <td>${p.id || 'Chưa có'}</td>
                         <td>${p.productName || 'Chưa có'}</td>
                         <td>${p.price || 0}</td>
                         <td>${p.discount || 0}</td>

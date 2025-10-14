@@ -14,7 +14,7 @@
                 <!-- Tên sản phẩm -->
                 <label class="form-label fw-bold">Tên sản phẩm</label>
                 <input type="text" id="PRODUCT_NAME" class="form-control"
-                       placeholder="Nhập tên (nhiều tên cách nhau bằng dấu ;)" required>
+                       placeholder="Nhập tên product" required>
 
                 <!-- Giá -->
                 <label class="form-label fw-bold mt-3">Giá</label>
@@ -22,15 +22,15 @@
 
                 <!-- Số lượng -->
                 <label class="form-label fw-bold mt-3">Số lượng</label>
-                <input type="number" id="QUALITY" class="form-control">
+                <input type="number" id="QUALITY" class="form-control" required>
 
                 <!-- Giảm giá -->
                 <label class="form-label fw-bold mt-3">Giảm giá (%)</label>
-                <input type="number" id="DISCOUNT" class="form-control">
+                <input type="number" id="DISCOUNT" class="form-control" required>
 
                 <!-- Mô tả -->
                 <label class="form-label fw-bold mt-3">Mô tả</label>
-                <textarea id="DESCRIPTION" rows="4" class="form-control"></textarea>
+                <textarea id="DESCRIPTION" rows="4" class="form-control" required></textarea>
 
                 <!-- Danh mục -->
                 <label class="form-label fw-bold mt-3">Danh mục</label>
@@ -52,9 +52,10 @@
                 <input type="text" id="TAG_ID" class="form-control" placeholder="Nhập 1 tag...">
 
                 <!-- Hình ảnh -->
-                <label class="form-label fw-bold mt-3">Hình ảnh sản phẩm</label>
+                <label class="form-label fw-bold mt-3">Hình ảnh sản phẩm (tối đa 5 hình)</label>
                 <input type="file" id="IMAGE" class="form-control" accept="image/*" multiple>
                 <div id="previewContainer" class="mt-2"></div>
+                <div id="imageError" class="text-danger mt-2" style="display: none;">Chỉ được phép chọn tối đa 5 hình ảnh!</div>
             </div>
         </div>
 
@@ -79,7 +80,6 @@
             loadCategories();
             loadTags();
 
-            // ======= Load Categories =======
             function loadCategories() {
                 $.getJSON('/api/categories', res => {
                     const select = $('#CATEGORY_ID');
@@ -120,30 +120,64 @@
             $('#IMAGE').on('change', function (e) {
                 const files = e.target.files;
                 const container = $('#previewContainer').empty();
+                const errorDiv = $('#imageError');
+
+                if (files.length > 5) {
+                    errorDiv.show();
+                    $(this).val('');
+                    return;
+                } else {
+                    errorDiv.hide();
+                }
+
                 Array.from(files).forEach(file => {
                     const url = URL.createObjectURL(file);
-                    const item = $(`
-                        <div class="d-inline-block position-relative m-2">
-                            <img src="${url}" class="preview-img">
-                        </div>
-                    `);
+                    const item = $(`<div class="d-inline-block position-relative m-2">
+                                        <img src="${url}" class="preview-img" style="max-width: 100px; max-height: 100px;">
+                                    </div>`);
                     container.append(item);
                 });
             });
 
-            $('#btnAdd').click(() => {
+            $('#btnAdd').click(async () => {
+                const files = $('#IMAGE')[0].files;
+                if (files.length > 5) {
+                    alert('Chỉ được phép chọn tối đa 5 hình ảnh!');
+                    return;
+                }
+
+                let tagName = $('#TAG_ID').val().trim();
+                let tagID = null;
+                if(tagName){
+                    try{
+                        const existingTags = await $.getJSON('/api/tags');
+                        const existingTag = existingTags.find(t => t.tagName.toLowerCase() === tagName.toLowerCase());
+                        if(existingTag){
+                            tagID = existingTag.id;
+                        }else{
+                            const newTag = await $.ajax({
+                                url: '/api/tags',
+                                type: 'POST',
+                                contentType: 'application/json',
+                                data: JSON.stringify({ tagName })
+                            });
+                        }
+                    }catch(err){
+                        return alert('Lỗi khi xử lý tag: ' + (err.responseJSON?.error || err.statusText));
+                    }
+                }
+
                 const formData = new FormData();
                 formData.append('productName', $('#PRODUCT_NAME').val());
                 formData.append('price', $('#PRICE').val());
-                formData.append('quality', $('#QUALITY').val() || 0);
-                formData.append('discount', $('#DISCOUNT').val() || 0);
+                formData.append('quality', $('#QUALITY').val());
+                formData.append('discount', $('#DISCOUNT').val());
                 formData.append('description', $('#DESCRIPTION').val());
-                formData.append('categoryID', $('#CATEGORY_ID').val() || 0);
-                formData.append('tagID', $('#TAG_ID').val().trim());
+                formData.append('categoryID', $('#CATEGORY_ID').val());
+                if(tagID) formData.append('tagID', tagID);
 
-                const files = $('#IMAGE')[0].files;
                 if (files && files.length > 0) {
-                    Array.from(files).forEach((file, i) => {
+                    Array.from(files).slice(0, 5).forEach((file, i) => {
                         formData.append(`file${i}`, file);
                     });
                 }
@@ -156,10 +190,15 @@
                     contentType: false,
                     success: res => {
                         alert(res.message || 'Thêm sản phẩm thành công!');
-                        window.location.href = '@Url.Action("Index", "Products", new { area = "Admin" })';
+                        $('#frmAddProduct')[0].reset();
+                        $('#previewContainer').empty();
+                        $('#imageError').hide();
+                        $('#CATEGORY_ID').val('');
+                        $('#newCategoryContainer').hide();
+                        $('#newCategoryName').val('');
                     },
                     error: xhr => {
-                        alert(xhr.responseJSON?.error ||  'Lỗi khi thêm sản phẩm!');
+                        alert(xhr.responseJSON?.error || 'Lỗi khi thêm sản phẩm!');
                     }
                 });
             });

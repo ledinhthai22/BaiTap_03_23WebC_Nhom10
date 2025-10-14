@@ -1,0 +1,67 @@
+﻿@{
+	Layout = "_Layout";
+}
+@section Title {
+		Thêm thẻ
+}
+<div class="card-body">
+	<form id="frmAddTag">
+		<div class="row g-3">
+			<div class="col-12">
+				<!-- Tên thẻ -->
+				<label class="form-label fw-bold">Tên thẻ</label>
+				<input type="text" id="TAG_NAME" class="form-control" placeholder="Nhập tên thẻ" required />
+				<br />
+				<!-- Nút hành động -->
+				<div class="text-center mt-4 d-flex justify-content-center gap-2">
+					<button type="button" id="btnAdd" class="btn btn-outline-primary">
+						<i class="bi bi-save"></i> Lưu thẻ
+					</button>
+					<button type="button" id="btnBack" class="btn btn-outline-secondary">
+						<i class="bi bi-arrow-left"></i> Quay lại
+					</button>
+				</div>
+			</div>
+		</div>
+	</form>
+</div>
+@section js {
+	<script>
+		$(document).ready(function () {
+			// Handle form submission
+			$('#btnAdd').click(function () {
+				const name = $('#TAG_NAME').val().trim();
+				// Client-side validation
+				if (!name) {
+					alert('Vui lòng nhập tên thẻ!');
+					return;
+				}
+				if (name.length > 100) {
+					alert('Tên thẻ không được vượt quá 100 ký tự!');
+					return;
+				}
+				if (/\d/.test(name)) {
+					alert('Tên thẻ không được chứa số!');
+					return;
+				}
+				$.ajax({
+					url: '/api/tags',
+					type: 'POST',
+					contentType: 'application/json',
+					data: JSON.stringify({ tagName: name, status: true }),
+					success: function (response) {
+						alert('Thêm thẻ thành công!');
+						window.location.href = '@Url.Action("Index", "Tag")';
+					},
+					error: function (xhr, status, error) {
+						alert('Đã xảy ra lỗi khi thêm thẻ: ' + xhr.responseText);
+					}
+				});
+			});
+			// Handle back button
+			$('#btnBack').click(function () {
+				window.location.href = '@Url.Action("Index", "Tag")';
+			});
+		});
+	</script>
+}
