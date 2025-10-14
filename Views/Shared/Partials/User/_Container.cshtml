@@ -13,6 +13,7 @@
                 <ul class="nav navbar-nav">
                     <li class="@(ViewBag.PageName=="Home"?"active":"")"><a asp-controller="home" asp-action="index">Home</a></li>
                     <li class="@(ViewBag.PageName=="List"?"active":"")"><a asp-controller="product" asp-action="index">Product</a></li>
+                   
                     <li class="@(ViewBag.PageName=="Cart"?"active":"")"><a asp-controller="product" asp-action="cart">Cart</a></li>
                     <li class="@(ViewBag.PageName=="Contact"?"active":"")"><a asp-controller="home" asp-action="contact">Contact</a></li>
                 </ul>

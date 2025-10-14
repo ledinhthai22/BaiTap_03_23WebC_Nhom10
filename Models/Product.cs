@@ -43,6 +43,9 @@ namespace BaiTap_03_23WebC_Nhom10.Models
         public string? categoryName { get; set; }
 
         [NotMapped]
+        public string? tagName { get; set; }
+
+        [NotMapped]
         public List<string>? imageList { get; set; }
     }
 }

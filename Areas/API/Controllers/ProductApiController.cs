@@ -27,11 +27,12 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
             {
                 string query = @"
                     SELECT P.ID, P.PRODUCT_NAME, P.PRICE, P.DISCOUNT, P.IMAGE, P.DESCRIPTION,
-                           P.QUALITY, P.CATEGORY_ID, P.TAG_ID, P.VIEWS, P.SELLED, 
-                           P.STATUS, C.CATEGORY_NAME, P.CREATE_AT, P.UPDATE_AT
-                    FROM PRODUCTS P
-                    JOIN CATEGORY C ON P.CATEGORY_ID = C.ID
-                    WHERE P.STATUS = 1";
+                             P.QUALITY, P.CATEGORY_ID, P.TAG_ID, P.VIEWS, P.SELLED, 
+                             P.STATUS, C.CATEGORY_NAME, T.TAG_NAME , P.CREATE_AT, P.UPDATE_AT
+                      FROM PRODUCTS P
+                      JOIN CATEGORY C ON P.CATEGORY_ID = C.ID
+                      JOIN TAGS T ON P.TAG_ID = T.ID
+                      WHERE P.STATUS = 1";
 
                 DataTable dt = _db.ExecuteQuery(query);
                 var products = new List<Product>();
@@ -57,11 +58,12 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
             try
             {
                 string query = @"
-                    SELECT P.ID, P.PRODUCT_NAME, P.PRICE, P.DISCOUNT, P.IMAGE, P.DESCRIPTION,
-                           P.QUALITY, P.CATEGORY_ID, P.TAG_ID, P.VIEWS, P.SELLED, 
-                           P.STATUS, C.CATEGORY_NAME, P.CREATE_AT, P.UPDATE_AT
-                    FROM PRODUCTS P
-                    JOIN CATEGORY C ON P.CATEGORY_ID = C.ID
+                     SELECT P.ID, P.PRODUCT_NAME, P.PRICE, P.DISCOUNT, P.IMAGE, P.DESCRIPTION,
+                             P.QUALITY, P.CATEGORY_ID, P.TAG_ID, P.VIEWS, P.SELLED, 
+                             P.STATUS, C.CATEGORY_NAME, T.TAG_NAME , P.CREATE_AT, P.UPDATE_AT
+                      FROM PRODUCTS P
+                      JOIN CATEGORY C ON P.CATEGORY_ID = C.ID
+                      JOIN TAGS T ON P.TAG_ID = T.ID
                     WHERE P.ID = @id";
 
                 var param = new SqlParameter("@id", id);
@@ -93,12 +95,11 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
         {
             try
             {
-                // 🟢 Lấy và kiểm tra tên sản phẩm
+ 
                 string name = form["productName"];
                 if (string.IsNullOrWhiteSpace(name))
                     return BadRequest(new { error = "Vui lòng nhập tên sản phẩm." });
 
-                // 🔍 Kiểm tra tên sản phẩm đã tồn tại chưa
                 string checkQuery = "SELECT COUNT(*) FROM PRODUCTS WHERE PRODUCT_NAME = @name";
                 var checkParam = new SqlParameter("@name", name.Trim());
                 int existingCount = Convert.ToInt32(_db.ExecuteScalar(checkQuery, new[] { checkParam }));
@@ -108,7 +109,7 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                     return BadRequest(new { error = "Tên sản phẩm đã tồn tại trong hệ thống!" });
                 }
 
-                // 🖼️ Upload ảnh
+ 
                 var imageNames = new List<string>();
                 if (form.Files != null && form.Files.Count > 0)
                 {
@@ -131,11 +132,11 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                     }
                 }
 
-                // 🔹 Ảnh đầu tiên là ảnh chính
+                // Ảnh đầu tiên là ảnh chính
                 string imageList = string.Join(";", imageNames);
                 string mainImage = imageNames.FirstOrDefault();
 
-                // 🔖 Tag xử lý
+                // Tag xử lý
                 string tagName = form["tagID"].FirstOrDefault();
                 int? tagId = null;
                 if (!string.IsNullOrEmpty(tagName))
@@ -156,31 +157,30 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                     }
                 }
 
-                // 📦 Parse dữ liệu
+                //  Parse dữ liệu
                 decimal price = decimal.TryParse(form["price"], out var p) ? p : 0;
                 decimal discount = decimal.TryParse(form["discount"], out var d) ? d / 100 : 0;
                 int? quality = int.TryParse(form["quality"], out var q) ? q : null;
                 string description = form["description"];
                 int categoryId = int.TryParse(form["categoryID"], out var c) ? c : 0;
 
-                // 💾 Insert dữ liệu
                 string insertQuery = @"
-            INSERT INTO PRODUCTS (PRODUCT_NAME, PRICE, DISCOUNT, IMAGE, DESCRIPTION,
-                                  QUALITY, CATEGORY_ID, TAG_ID, STATUS, CREATE_AT)
-            OUTPUT INSERTED.ID
-            VALUES (@name, @price, @discount, @image, @desc, @quality, @category, @tag, 1, GETDATE())";
+                                        INSERT INTO PRODUCTS (PRODUCT_NAME, PRICE, DISCOUNT, IMAGE, DESCRIPTION,
+                                                              QUALITY, CATEGORY_ID, TAG_ID, STATUS, CREATE_AT)
+                                        OUTPUT INSERTED.ID
+                                        VALUES (@name, @price, @discount, @image, @desc, @quality, @category, @tag, 1, GETDATE())";
 
                 var parameters = new[]
                 {
-            new SqlParameter("@name", name.Trim()),
-            new SqlParameter("@price", price),
-            new SqlParameter("@discount", discount),
-            new SqlParameter("@image", (object?)imageList ?? DBNull.Value),
-            new SqlParameter("@desc", (object?)description ?? DBNull.Value),
-            new SqlParameter("@quality", (object?)quality ?? DBNull.Value),
-            new SqlParameter("@category", categoryId),
-            new SqlParameter("@tag", (object?)tagId ?? DBNull.Value)
-        };
+                    new SqlParameter("@name", name.Trim()),
+                    new SqlParameter("@price", price),
+                    new SqlParameter("@discount", discount),
+                    new SqlParameter("@image", (object?)imageList ?? DBNull.Value),
+                    new SqlParameter("@desc", (object?)description ?? DBNull.Value),
+                    new SqlParameter("@quality", (object?)quality ?? DBNull.Value),
+                    new SqlParameter("@category", categoryId),
+                    new SqlParameter("@tag", (object?)tagId ?? DBNull.Value)
+                };
 
                 var newIdObj = _db.ExecuteScalar(insertQuery, parameters);
 
@@ -226,7 +226,9 @@ namespace BaiTap_03_23WebC_Nhom10.Controllers.API
                 status = row["STATUS"] != DBNull.Value && Convert.ToBoolean(row["STATUS"]),
                 createAT = row["CREATE_AT"] == DBNull.Value ? DateTime.Now : Convert.ToDateTime(row["CREATE_AT"]),
                 updateAT = row["UPDATE_AT"] == DBNull.Value ? null : Convert.ToDateTime(row["UPDATE_AT"]),
-                categoryName = row["CATEGORY_NAME"]?.ToString()
+                categoryName = row["CATEGORY_NAME"]?.ToString(),
+                tagName = row["TAG_NAME"]?.ToString()
+
             };
         }
     }
